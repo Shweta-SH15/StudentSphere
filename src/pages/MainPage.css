@@ -1,0 +1,145 @@
+General Styles
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f4f7fc;
+    color: #333;
+  }
+  
+  /* Header Styling */
+  .header-toolbar {
+    --background: #ffffff;
+    --color: #333;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px 15px;
+  }
+  
+  .auth-button {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-left: 10px;
+  }
+  
+  /* Main Layout - Arranges text on the left and image on the right */
+  .main-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 50px 20px;
+  }
+  
+  /* Text Section */
+  .text-section {
+    flex: 1;
+    max-width: 50%;
+  }
+  
+  .main-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #68759a;
+    margin-bottom: 15px;
+  }
+  
+  .main-description {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+  
+  /* Image Section */
+  .image-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .main-image {
+    max-width: 90%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .main-image:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Registration Card */
+  .register-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .register-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  /* Buttons */
+  .google-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px;
+    width: 100%;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .google-button:hover {
+    background: #f0f0f0;
+  }
+  
+  .google-icon {
+    width: 20px;
+    margin-right: 10px;
+  }
+  
+  .email-button {
+    width: 100%;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .email-button:hover {
+    background: white;
+    color: black;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .main-layout {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .text-section {
+      max-width: 100%;
+    }
+  
+    .image-section {
+      margin-top: 30px;
+    }
+  
+    .main-image {
+      max-width: 80%;
+    }
+  }
+  
