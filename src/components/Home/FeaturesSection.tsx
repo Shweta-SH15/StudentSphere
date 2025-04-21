@@ -1,7 +1,6 @@
 
 import FeatureCard from "./FeatureCard";
-import { Users, House, User } from "lucide-react";
-import { Restaurant } from "lucide-react";
+import { Users, House, User, Coffee } from "lucide-react";
 
 const FeaturesSection = () => {
   const features = [
@@ -22,7 +21,7 @@ const FeaturesSection = () => {
     {
       title: "Find Restaurants",
       description: "Discover restaurants by cuisine type, price range, and distance. View menus, photos, and contact information in one place.",
-      icon: <Restaurant size={32} className="text-primary" />,
+      icon: <Coffee size={32} className="text-primary" />,
       path: "/restaurants",
       color: "bg-accent-orange",
     },
