@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { heart, x } from "lucide-react";
+import { Heart, X } from "lucide-react";
 
 interface SwipeCardProps {
   id: string;
@@ -148,7 +148,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           className="h-14 w-14 rounded-full border-red-300 text-red-500 hover:bg-red-50 hover:text-red-600"
           onClick={handleDislike}
         >
-          <x className="h-6 w-6" />
+          <X className="h-6 w-6" />
         </Button>
 
         <Button 
@@ -157,7 +157,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           className="h-14 w-14 rounded-full border-green-300 text-green-500 hover:bg-green-50 hover:text-green-600"
           onClick={handleLike}
         >
-          <heart className="h-6 w-6" />
+          <Heart className="h-6 w-6" />
         </Button>
       </div>
     </div>
