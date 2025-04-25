@@ -25,7 +25,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold text-primary flex items-center gap-2">
           <span className="text-2xl">🌎</span>
@@ -33,16 +33,16 @@ const Header = () => {
         </Link>
 
         <nav className="hidden md:flex space-x-6">
-          <Link to="/friends" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/friends" className="text-gray-300 hover:text-primary transition-colors">
             Friends
           </Link>
-          <Link to="/accommodation" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/accommodation" className="text-gray-300 hover:text-primary transition-colors">
             Accommodation
           </Link>
-          <Link to="/restaurants" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/restaurants" className="text-gray-300 hover:text-primary transition-colors">
             Restaurants
           </Link>
-          <Link to="/roommates" className="text-gray-600 hover:text-primary transition-colors">
+          <Link to="/roommates" className="text-gray-300 hover:text-primary transition-colors">
             Roommates
           </Link>
         </nav>
