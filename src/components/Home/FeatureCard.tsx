@@ -13,24 +13,33 @@ interface FeatureCardProps {
 }
 
 const FeatureCard = ({ title, description, icon, path, color }: FeatureCardProps) => {
+  const colorMap = {
+    "bg-accent-purple": "border-purple-500 text-purple-500",
+    "bg-accent-green": "border-primary text-primary",
+    "bg-accent-orange": "border-secondary text-secondary",
+    "bg-accent-blue": "border-tertiary text-tertiary"
+  };
+
+  const textColor = colorMap[color as keyof typeof colorMap] || "border-primary text-primary";
+  
   return (
-    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
-      <CardHeader className={`${color} rounded-t-lg`}>
+    <Card className="bg-card bg-opacity-30 border border-opacity-20 hover:border-opacity-50 transition-all duration-300">
+      <CardHeader>
         <div className="flex justify-center">
-          <div className="w-16 h-16 flex items-center justify-center text-4xl">
+          <div className="w-16 h-16 flex items-center justify-center">
             {icon}
           </div>
         </div>
-        <CardTitle className="text-center mt-2">{title}</CardTitle>
+        <CardTitle className={`text-center mt-2 ${textColor.split(' ')[1]}`}>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow py-4">
-        <CardDescription className="text-center text-gray-600 text-sm">
+      <CardContent className="py-4">
+        <CardDescription className="text-center text-gray-400 text-sm">
           {description}
         </CardDescription>
       </CardContent>
-      <CardFooter className="pt-0">
-        <Button asChild className="w-full bg-primary hover:bg-secondary">
-          <Link to={path}>Explore Now</Link>
+      <CardFooter className="pt-0 flex justify-center">
+        <Button asChild variant="outline" className={`${textColor} hover:bg-white hover:bg-opacity-5`}>
+          <Link to={path}>Explore</Link>
         </Button>
       </CardFooter>
     </Card>

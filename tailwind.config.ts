@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -25,21 +26,22 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#9b87f5",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#22c55e", // Green like ZBS Capital
+          foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#7E69AB",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#ef4444", // Red like ZBS Tech
+          foreground: "#ffffff",
         },
         tertiary: {
-          DEFAULT: "#6E59A5",
+          DEFAULT: "#3b82f6", // Blue like ZBS Reports
           foreground: "#ffffff",
         },
         accent: {
-          green: "#F2FCE2",
-          orange: "#FEC6A1",
-          purple: "#E5DEFF",
+          green: "rgba(34, 197, 94, 0.1)",
+          orange: "rgba(239, 68, 68, 0.1)",
+          blue: "rgba(59, 130, 246, 0.1)",
+          purple: "rgba(168, 85, 247, 0.1)",
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
