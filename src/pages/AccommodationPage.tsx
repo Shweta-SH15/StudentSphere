@@ -166,12 +166,12 @@ const AccommodationPage = () => {
   const currentAccommodation = filteredAccommodations[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-[#080c14] py-8">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Find Accommodation</h1>
+        <h1 className="text-3xl font-bold text-center mb-6 text-gray-100">Find Accommodation</h1>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#0f1628]">
             <TabsTrigger value="discover">Discover</TabsTrigger>
             <TabsTrigger value="saved">Saved ({likedAccommodations.length})</TabsTrigger>
           </TabsList>
@@ -188,11 +188,11 @@ const AccommodationPage = () => {
                 details={
                   <div className="space-y-3">
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">{currentAccommodation.bedrooms} {currentAccommodation.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}</Badge>
-                      <Badge variant="outline">{currentAccommodation.bathrooms} {Number.isInteger(currentAccommodation.bathrooms) ? (currentAccommodation.bathrooms === 1 ? 'Bathroom' : 'Bathrooms') : 'Baths'}</Badge>
-                      <Badge variant="outline">{currentAccommodation.type}</Badge>
+                      <Badge variant="outline" className="text-gray-100 border-gray-700">{currentAccommodation.bedrooms} {currentAccommodation.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}</Badge>
+                      <Badge variant="outline" className="text-gray-100 border-gray-700">{currentAccommodation.bathrooms} {Number.isInteger(currentAccommodation.bathrooms) ? (currentAccommodation.bathrooms === 1 ? 'Bathroom' : 'Bathrooms') : 'Baths'}</Badge>
+                      <Badge variant="outline" className="text-gray-100 border-gray-700">{currentAccommodation.type}</Badge>
                     </div>
-                    <p className="text-sm">{currentAccommodation.description}</p>
+                    <p className="text-sm text-gray-300">{currentAccommodation.description}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {currentAccommodation.features.map((feature, index) => (
                         <Badge key={index} variant="secondary" className="bg-accent-green text-green-700">
@@ -207,7 +207,7 @@ const AccommodationPage = () => {
               />
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-500">No accommodations found matching your filters.</p>
+                <p className="text-gray-400">No accommodations found matching your filters.</p>
                 <Button 
                   variant="link" 
                   onClick={() => setFilteredAccommodations(mockAccommodations)}
@@ -223,7 +223,7 @@ const AccommodationPage = () => {
             {likedAccommodations.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {likedAccommodations.map((accommodation) => (
-                  <div key={accommodation.id} className="bg-white rounded-lg shadow-sm p-4">
+                  <div key={accommodation.id} className="bg-[#0f1628] rounded-lg border border-gray-800 p-4">
                     <div className="flex flex-col md:flex-row gap-4">
                       <img
                         src={accommodation.image}
@@ -231,10 +231,10 @@ const AccommodationPage = () => {
                         className="w-full md:w-32 h-32 object-cover rounded"
                       />
                       <div className="flex-1">
-                        <h3 className="font-semibold">{accommodation.title}</h3>
-                        <p className="text-sm text-gray-500">{accommodation.location} • {accommodation.price}</p>
-                        <p className="text-sm mt-2">{accommodation.bedrooms} Bed • {accommodation.bathrooms} Bath</p>
-                        <p className="text-xs mt-2 text-gray-600">Contact: {accommodation.contact}</p>
+                        <h3 className="font-semibold text-gray-100">{accommodation.title}</h3>
+                        <p className="text-sm text-gray-400">{accommodation.location} • {accommodation.price}</p>
+                        <p className="text-sm mt-2 text-gray-300">{accommodation.bedrooms} Bed • {accommodation.bathrooms} Bath</p>
+                        <p className="text-xs mt-2 text-gray-400">Contact: {accommodation.contact}</p>
                         <Button
                           size="sm"
                           className="mt-2 bg-primary hover:bg-secondary"
@@ -249,7 +249,7 @@ const AccommodationPage = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-500">You haven't saved any accommodations yet.</p>
+                <p className="text-gray-400">You haven't saved any accommodations yet.</p>
                 <Button 
                   variant="link" 
                   onClick={() => setActiveTab("discover")}
