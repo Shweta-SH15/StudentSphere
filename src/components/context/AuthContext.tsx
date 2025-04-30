@@ -26,128 +26,92 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock data for demo purposes
-const MOCK_USER: User = {
-  id: '1',
-  name: 'Sarah Johnson',
-  email: 'sarah@example.com',
-  avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-  nationality: 'United Kingdom',
-  interests: ['Photography', 'Hiking', 'Cooking'],
-  about: 'Economics student from London, looking to make new friends and explore the city.'
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Check if user is saved in localStorage for persistence
-    const savedUser = localStorage.getItem('immigrantConnect_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const storedUser = localStorage.getItem('immigrantConnect_user');
+    const token = localStorage.getItem('immigrantConnect_token');
+  
+    if (storedUser && token) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
     }
-    setLoading(false);
   }, []);
+  
 
   const login = async (email: string, password: string) => {
     try {
-      setLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (email && password) { // Simple validation for demo
-        setUser(MOCK_USER);
-        localStorage.setItem('immigrantConnect_user', JSON.stringify(MOCK_USER));
-        toast("Welcome back!", {
-          description: "You've successfully logged in.",
-        });
-      } else {
-        throw new Error("Invalid credentials");
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
       }
-    } catch (error) {
-      toast("Login Failed", {
-        description: "Please check your credentials and try again.",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
+  
+      localStorage.setItem('immigrantConnect_token', data.token);
+      localStorage.setItem('immigrantConnect_user', JSON.stringify(data.user));
+  
+      setUser(data.user);
+      setIsAuthenticated(true);
+    } catch (error: any) {
+      console.error(error.message);
+      toast.error(error.message || 'Login error');
     }
   };
-
+  
   const loginWithGoogle = async () => {
-    try {
-      setLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUser(MOCK_USER);
-      localStorage.setItem('immigrantConnect_user', JSON.stringify(MOCK_USER));
-      toast("Welcome via Google!", {
-        description: "You've successfully logged in.",
-      });
-    } catch (error) {
-      toast("Login Failed", {
-        description: "Google login failed. Please try again.",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    toast.error('Google login is not available in this version.');
   };
-
+  
   const loginWithFacebook = async () => {
-    try {
-      setLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUser(MOCK_USER);
-      localStorage.setItem('immigrantConnect_user', JSON.stringify(MOCK_USER));
-      toast("Welcome via Facebook!", {
-        description: "You've successfully logged in.",
-      });
-    } catch (error) {
-      toast("Login Failed", {
-        description: "Facebook login failed. Please try again.",
-      });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
+    toast.error('Facebook login is not available in this version.');
   };
+  
 
   const signup = async (name: string, email: string, password: string) => {
     try {
-      setLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (name && email && password) { // Simple validation for demo
-        const newUser = { ...MOCK_USER, name, email };
-        setUser(newUser);
-        localStorage.setItem('immigrantConnect_user', JSON.stringify(newUser));
-        toast("Welcome to ImmigrantConnect!", {
-          description: "Your account has been created successfully.",
-        });
-      } else {
-        throw new Error("Please fill all required fields");
-      }
-    } catch (error) {
-      toast("Signup Failed", {
-        description: "Please check your information and try again.",
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, email, password })
       });
-      throw error;
-    } finally {
-      setLoading(false);
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed');
+      }
+  
+      // 🔁 Option 1: auto-login after signup
+      await login(email, password);
+  
+      // 🔁 Option 2: manually notify user to login (comment out line above if using this)
+      // toast.success('Signup successful! Please login.');
+    } catch (error: any) {
+      console.error(error.message);
+      toast.error(error.message || 'Signup error');
     }
   };
+  
 
   const logout = () => {
     setUser(null);
+    setIsAuthenticated(false);
     localStorage.removeItem('immigrantConnect_user');
-    toast("Logged out", {
-      description: "You've been logged out successfully.",
-    });
+    localStorage.removeItem('immigrantConnect_token');
   };
+  
 
   const updateProfile = (data: Partial<User>) => {
     if (user) {
@@ -186,3 +150,7 @@ export const useAuth = () => {
   }
   return context;
 };
+function setIsAuthenticated(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+
