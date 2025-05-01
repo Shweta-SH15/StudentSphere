@@ -9,75 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
 
-// Mock data
-const mockRoommates = [
-  {
-    id: "rm1",
-    name: "Michael Park",
-    age: 23,
-    gender: "Male",
-    occupation: "Graduate Student",
-    budget: "$800-$1000/month",
-    moveInDate: "September 1, 2023",
-    lifestyle: ["Non-smoker", "Early Riser", "Quiet"],
-    interests: ["Reading", "Hiking", "Cooking"],
-    bio: "Engineering student looking for a roommate with similar study-focused lifestyle. Clean and organized.",
-    image: "https://randomuser.me/api/portraits/men/52.jpg",
-  },
-  {
-    id: "rm2",
-    name: "Sophia Chen",
-    age: 21,
-    gender: "Female",
-    occupation: "Undergraduate Student",
-    budget: "$600-$800/month",
-    moveInDate: "August 15, 2023",
-    lifestyle: ["Non-smoker", "Night Owl", "Social"],
-    interests: ["Art", "Movies", "Traveling"],
-    bio: "Art history student looking for a roommate who is respectful of shared spaces and doesn't mind occasional gatherings.",
-    image: "https://randomuser.me/api/portraits/women/39.jpg",
-  },
-  {
-    id: "rm3",
-    name: "David Kim",
-    age: 24,
-    gender: "Male",
-    occupation: "Working Professional",
-    budget: "$900-$1200/month",
-    moveInDate: "October 1, 2023",
-    lifestyle: ["Non-smoker", "Clean", "Active"],
-    interests: ["Fitness", "Technology", "Music"],
-    bio: "Software developer who works from home a few days a week. Looking for a roommate who is tidy and respects privacy.",
-    image: "https://randomuser.me/api/portraits/men/28.jpg",
-  },
-  {
-    id: "rm4",
-    name: "Emma Rodriguez",
-    age: 22,
-    gender: "Female",
-    occupation: "Undergraduate Student",
-    budget: "$700-$900/month",
-    moveInDate: "September 1, 2023",
-    lifestyle: ["Non-smoker", "Pet Lover", "Vegetarian"],
-    interests: ["Yoga", "Photography", "Volunteering"],
-    bio: "Environmental science student with a small cat. Looking for pet-friendly roommate who shares a passion for sustainability.",
-    image: "https://randomuser.me/api/portraits/women/62.jpg",
-  },
-  {
-    id: "rm5",
-    name: "James Wilson",
-    age: 25,
-    gender: "Male",
-    occupation: "Graduate Student",
-    budget: "$800-$1100/month",
-    moveInDate: "August 20, 2023",
-    lifestyle: ["Occasional Smoker", "Night Owl", "Social"],
-    interests: ["Music", "Sports", "Gaming"],
-    bio: "Music student who practices during the day. Looking for a roommate who appreciates music and has a similar schedule.",
-    image: "https://randomuser.me/api/portraits/men/37.jpg",
-  },
-];
-
 const RoommatesPage = () => {
   const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -152,7 +83,7 @@ const RoommatesPage = () => {
   const handleFilterChange = (filterId: string, value: string) => {
     if (value === "") {
       // Reset filter for this category
-      setFilteredRoommates(mockRoommates);
+      setFilteredRoommates(allRoommates);
     } else {
       let filtered;
       
