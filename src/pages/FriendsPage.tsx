@@ -9,70 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
 
-// Mock data
-const mockFriends = [
-  {
-    id: "f1",
-    name: "Alex Chen",
-    age: 22,
-    nationality: "China",
-    university: "University of Toronto",
-    interests: ["Photography", "Basketball", "Coding"],
-    languages: ["Mandarin", "English"],
-    bio: "Computer Science student looking to make international friends and practice my English.",
-    image: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    id: "f2",
-    name: "Laura García",
-    age: 20,
-    nationality: "Spain",
-    university: "McGill University",
-    interests: ["Music", "Hiking", "Politics"],
-    languages: ["Spanish", "English", "French"],
-    bio: "International Relations student who loves exploring the city and going to live music events.",
-    image: "https://randomuser.me/api/portraits/women/43.jpg",
-  },
-  {
-    id: "f3",
-    name: "Raj Patel",
-    age: 24,
-    nationality: "India",
-    university: "University of British Columbia",
-    interests: ["Cricket", "Cooking", "Startups"],
-    languages: ["Hindi", "English"],
-    bio: "MBA student with a passion for entrepreneurship and connecting people.",
-    image: "https://randomuser.me/api/portraits/men/85.jpg",
-  },
-  {
-    id: "f4",
-    name: "Emma Wilson",
-    age: 21,
-    nationality: "Australia",
-    university: "Queen's University",
-    interests: ["Swimming", "Travel", "Art"],
-    languages: ["English"],
-    bio: "Fine Arts student looking for friends to explore galleries and museums with.",
-    image: "https://randomuser.me/api/portraits/women/17.jpg",
-  },
-  {
-    id: "f5",
-    name: "Omar Hassan",
-    age: 23,
-    nationality: "Egypt",
-    university: "York University",
-    interests: ["Soccer", "History", "Film"],
-    languages: ["Arabic", "English"],
-    bio: "Film studies major hoping to find friends with similar interests in cinema and culture.",
-    image: "https://randomuser.me/api/portraits/men/76.jpg",
-  },
-];
 
 const FriendsPage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const token = localStorage.getItem('immigrantConnect_token');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedFriends, setLikedFriends] = useState<typeof mockFriends>([]);
-  const [filteredFriends, setFilteredFriends] = useState(mockFriends);
+  const [likedFriends, setLikedFriends] = useState([]);
+  const [allFriends, setAllFriends] = useState([]);
+  const [filteredFriends, setFilteredFriends] = useState([]);
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
 
@@ -97,41 +41,96 @@ const FriendsPage = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       setIsAuthModalOpen(true);
+      return;
     }
+
+    const fetchFriends = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/profile/friend-suggestions', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setAllFriends(data); // store all for filtering
+        setFilteredFriends(data); // show initially
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to load friends');
+      }
+    };
+    
+    const fetchLiked = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/profile/friends', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setLikedFriends(data);
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to load liked friends');
+      }
+    };
+
+    fetchFriends();
+    fetchLiked();
   }, [isAuthenticated]);
+
 
   const handleFilterChange = (filterId: string, value: string) => {
     if (value === "") {
       // Reset filter for this category
-      setFilteredFriends(mockFriends);
+      setFilteredFriends(allFriends);
     } else {
       let filtered;
-      
+
       if (filterId === "nationality") {
-        filtered = mockFriends.filter(friend => friend.nationality === value);
+        filtered = allFriends.filter(friend => friend.nationality === value);
       } else if (filterId === "interest") {
-        filtered = mockFriends.filter(friend => friend.interests.includes(value));
+        filtered = allFriends.filter(friend => friend.interests.includes(value));
       } else if (filterId === "language") {
-        filtered = mockFriends.filter(friend => friend.languages.includes(value));
+        filtered = allFriends.filter(friend => friend.languages.includes(value));
       } else {
-        filtered = mockFriends;
+        filtered = allFriends;
       }
-      
+
       setFilteredFriends(filtered);
       setCurrentIndex(0);
     }
   };
 
-  const handleLike = (id: string) => {
-    const likedFriend = filteredFriends.find(friend => friend.id === id);
+  const handleLike = async (id: string) => {
+    const likedFriend = filteredFriends.find(friend => friend._id === id); // _id comes from MongoDB
+
     if (likedFriend) {
-      setLikedFriends([...likedFriends, likedFriend]);
-      toast("New Friend Added!", {
-        description: `You liked ${likedFriend.name}`,
-      });
+      try {
+        const res = await fetch('http://localhost:5000/api/swipe/friend', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ friendId: likedFriend._id })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to like');
+
+        setLikedFriends([...likedFriends, likedFriend]);
+        toast("New Friend Added!", {
+          description: `You liked ${likedFriend.name}`,
+        });
+      } catch (err: any) {
+        console.error(err);
+        toast.error(err.message || 'Could not like friend');
+      }
     }
-    
-    // Move to next card
+
+
+    // Move to next card 
     setCurrentIndex(prevIndex => (prevIndex + 1) % filteredFriends.length);
   };
 
@@ -152,20 +151,20 @@ const FriendsPage = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-6">Find Friends</h1>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="discover">Discover</TabsTrigger>
             <TabsTrigger value="liked">Liked ({likedFriends.length})</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="discover" className="mt-0">
             <FilterBar options={filterOptions} onFilterChange={handleFilterChange} />
-            
+
             {filteredFriends.length > 0 ? (
               <SwipeCard
-                id={currentFriend.id}
-                image={currentFriend.image}
+                id={currentFriend._id}
+                image={`http://localhost:5000${currentFriend.profileImage || '/uploads/default.png'}`}
                 title={currentFriend.name}
                 subtitle={`${currentFriend.age} • ${currentFriend.nationality}`}
                 details={
@@ -173,18 +172,18 @@ const FriendsPage = () => {
                     <p className="text-sm text-gray-600">{currentFriend.university}</p>
                     <p className="text-sm">{currentFriend.bio}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {currentFriend.interests.map((interest, index) => (
-                        <Badge key={index} variant="secondary" className="bg-accent-purple text-primary">
-                          {interest}
+                      {(currentFriend.interest || []).map((item, index) => (
+                        <Badge key={index} variant="outline">
+                          {item}
                         </Badge>
                       ))}
                     </div>
                     <div className="mt-2">
                       <p className="text-xs text-gray-500 mb-1">Languages:</p>
                       <div className="flex flex-wrap gap-1">
-                        {currentFriend.languages.map((language, index) => (
+                        {(currentFriend.language || []).map((lang, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
-                            {language}
+                            {lang}
                           </Badge>
                         ))}
                       </div>
@@ -197,9 +196,9 @@ const FriendsPage = () => {
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">No friends found matching your filters.</p>
-                <Button 
-                  variant="link" 
-                  onClick={() => setFilteredFriends(mockFriends)}
+                <Button
+                  variant="link"
+                  onClick={() => setFilteredFriends(allFriends)}
                   className="mt-2 text-primary"
                 >
                   Reset Filters
@@ -207,14 +206,14 @@ const FriendsPage = () => {
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="liked">
             {likedFriends.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {likedFriends.map((friend) => (
-                  <div key={friend.id} className="bg-white rounded-lg shadow-sm p-4 flex">
+                  <div key={friend._id} className="bg-white rounded-lg shadow-sm p-4 flex">
                     <img
-                      src={friend.image}
+                      src={`http://localhost:5000${friend.profileImage || '/uploads/default.png'}`}
                       alt={friend.name}
                       className="w-16 h-16 rounded-full object-cover mr-4"
                     />
@@ -235,8 +234,8 @@ const FriendsPage = () => {
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">You haven't liked any friends yet.</p>
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   onClick={() => setActiveTab("discover")}
                   className="mt-2 text-primary"
                 >
@@ -248,9 +247,9 @@ const FriendsPage = () => {
         </Tabs>
       </div>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
         defaultView="login"
       />
     </div>
