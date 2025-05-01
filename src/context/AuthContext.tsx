@@ -1,14 +1,13 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
 interface User {
-  id: string;
+  _id: string;
   name: string;
   email: string;
-  avatar: string;
+  profileImage?: string;
   nationality?: string;
-  interests?: string[];
+  interest?: string[];
   about?: string;
 }
 
@@ -22,6 +21,7 @@ interface AuthContextType {
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
+  updateUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,13 +33,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const storedUser = localStorage.getItem('immigrantConnect_user');
     const token = localStorage.getItem('immigrantConnect_token');
-  
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
     }
+    setLoading(false);
   }, []);
-  
 
   const login = async (email: string, password: string) => {
     try {
@@ -50,32 +48,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         body: JSON.stringify({ email, password })
       });
-  
+
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
-      }
-  
+      if (!response.ok) throw new Error(data.error || 'Login failed');
+
       localStorage.setItem('immigrantConnect_token', data.token);
       localStorage.setItem('immigrantConnect_user', JSON.stringify(data.user));
-  
       setUser(data.user);
-      setIsAuthenticated(true);
     } catch (error: any) {
-      console.error(error.message);
       toast.error(error.message || 'Login error');
     }
   };
-  
-  const loginWithGoogle = async () => {
-    toast.error('Google login is not available in this version.');
-  };
-  
-  const loginWithFacebook = async () => {
-    toast.error('Facebook login is not available in this version.');
-  };
-  
 
   const signup = async (name: string, email: string, password: string) => {
     try {
@@ -86,32 +69,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         body: JSON.stringify({ name, email, password })
       });
-  
+
       const data = await response.json();
-  
-      if (!response.ok) {
-        throw new Error(data.error || 'Signup failed');
-      }
-  
-      // 🔁 Option 1: auto-login after signup
-      await login(email, password);
-  
-      // 🔁 Option 2: manually notify user to login (comment out line above if using this)
-      // toast.success('Signup successful! Please login.');
+      if (!response.ok) throw new Error(data.error || 'Signup failed');
+
+      await login(email, password); // auto-login after signup
     } catch (error: any) {
-      console.error(error.message);
       toast.error(error.message || 'Signup error');
     }
   };
-  
 
   const logout = () => {
     setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem('immigrantConnect_user');
     localStorage.removeItem('immigrantConnect_token');
+    localStorage.removeItem('immigrantConnect_user');
   };
-  
 
   const updateProfile = (data: Partial<User>) => {
     if (user) {
@@ -124,6 +96,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    localStorage.setItem("immigrantConnect_user", JSON.stringify(updatedUser));
+  };
+
+  const loginWithGoogle = async () => {
+    toast.error("Google login is not available yet.");
+  };
+
+  const loginWithFacebook = async () => {
+    toast.error("Facebook login is not available yet.");
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -131,11 +116,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         loading,
         login,
-        loginWithGoogle,
-        loginWithFacebook,
         signup,
         logout,
-        updateProfile
+        updateProfile,
+        updateUser,
+        loginWithGoogle,
+        loginWithFacebook,
       }}
     >
       {children}
@@ -146,11 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
-function setIsAuthenticated(arg0: boolean) {
-  throw new Error('Function not implemented.');
-}
-

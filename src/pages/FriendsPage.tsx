@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
+import { useNavigate } from "react-router-dom";
 
 
 const FriendsPage = () => {
@@ -19,6 +20,7 @@ const FriendsPage = () => {
   const [filteredFriends, setFilteredFriends] = useState([]);
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
+  const navigate = useNavigate();
 
   const filterOptions = [
     {
@@ -223,7 +225,7 @@ const FriendsPage = () => {
                       <Button
                         size="sm"
                         className="mt-2 bg-primary hover:bg-secondary"
-                        onClick={() => handleMessageClick(friend.name)}
+                        onClick={() => navigate(`/chat?with=${friend._id}`)}
                       >
                         Message
                       </Button>
