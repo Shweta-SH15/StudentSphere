@@ -81,8 +81,9 @@ const mockRoommates = [
 const RoommatesPage = () => {
   const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedRoommates, setLikedRoommates] = useState<typeof mockRoommates>([]);
-  const [filteredRoommates, setFilteredRoommates] = useState(mockRoommates);
+  const [allRoommates, setAllRoommates] = useState([]);
+  const [likedRoommates, setLikedRoommates] = useState([]);
+  const [filteredRoommates, setFilteredRoommates] = useState([]);  
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
 
@@ -107,8 +108,46 @@ const RoommatesPage = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       setIsAuthModalOpen(true);
+      return;
     }
+  
+    const token = localStorage.getItem("immigrantConnect_token");
+  
+    const fetchRoommates = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/profile/roommate-suggestions", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        setAllRoommates(data);
+        setFilteredRoommates(data);
+      } catch (err) {
+        toast.error("Failed to load roommates.");
+        console.error(err);
+      }
+    };
+  
+    const fetchLikedRoommates = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/profile/roommates", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        setLikedRoommates(data);
+      } catch (err) {
+        toast.error("Failed to load liked roommates.");
+        console.error(err);
+      }
+    };
+  
+    fetchRoommates();
+    fetchLikedRoommates();
   }, [isAuthenticated]);
+  
 
   const handleFilterChange = (filterId: string, value: string) => {
     if (value === "") {
@@ -118,18 +157,18 @@ const RoommatesPage = () => {
       let filtered;
       
       if (filterId === "gender") {
-        filtered = mockRoommates.filter(roommate => roommate.gender === value);
+        filtered = allRoommates.filter(roommate => roommate.gender === value);
       } else if (filterId === "age") {
-        filtered = mockRoommates.filter(roommate => {
+        filtered = allRoommates.filter(roommate => {
           if (value === "18-21") return roommate.age >= 18 && roommate.age <= 21;
           if (value === "22-25") return roommate.age >= 22 && roommate.age <= 25;
           if (value === "26+") return roommate.age >= 26;
           return true;
         });
       } else if (filterId === "lifestyle") {
-        filtered = mockRoommates.filter(roommate => roommate.lifestyle.includes(value));
+        filtered = allRoommates.filter(roommate => roommate.lifestyle.includes(value));
       } else {
-        filtered = mockRoommates;
+        filtered = allRoommates;
       }
       
       setFilteredRoommates(filtered);
@@ -137,18 +176,36 @@ const RoommatesPage = () => {
     }
   };
 
-  const handleLike = (id: string) => {
-    const likedRoommate = filteredRoommates.find(roommate => roommate.id === id);
+  const handleLike = async (id: string) => {
+    const token = localStorage.getItem("immigrantConnect_token");
+    const likedRoommate = filteredRoommates.find(r => r._id === id); // use _id from MongoDB
+  
     if (likedRoommate) {
-      setLikedRoommates([...likedRoommates, likedRoommate]);
-      toast("Roommate Saved!", {
-        description: `You matched with ${likedRoommate.name}`,
-      });
+      try {
+        const res = await fetch("http://localhost:5000/api/swipe/roommate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ roommateId: likedRoommate._id }),
+        });
+  
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to like roommate");
+  
+        setLikedRoommates([...likedRoommates, likedRoommate]);
+        toast("Roommate Saved!", {
+          description: `You matched with ${likedRoommate.name}`,
+        });
+      } catch (err: any) {
+        toast.error(err.message || "Could not like roommate");
+      }
     }
-    
-    // Move to next card
-    setCurrentIndex(prevIndex => (prevIndex + 1) % filteredRoommates.length);
+  
+    setCurrentIndex(prev => (prev + 1) % filteredRoommates.length);
   };
+  
 
   const handleDislike = (id: string) => {
     // Move to next card
@@ -179,8 +236,8 @@ const RoommatesPage = () => {
             
             {filteredRoommates.length > 0 ? (
               <SwipeCard
-                id={currentRoommate.id}
-                image={currentRoommate.image}
+                id={currentRoommate._id}
+                image={`http://localhost:5000${currentRoommate.profileImage || "/uploads/default.png"}`}
                 title={currentRoommate.name}
                 subtitle={`${currentRoommate.age} • ${currentRoommate.gender} • ${currentRoommate.occupation}`}
                 details={
@@ -220,7 +277,7 @@ const RoommatesPage = () => {
                 <p className="text-gray-500">No roommates found matching your filters.</p>
                 <Button 
                   variant="link" 
-                  onClick={() => setFilteredRoommates(mockRoommates)}
+                  onClick={() => setFilteredRoommates(allRoommates)}
                   className="mt-2 text-primary"
                 >
                   Reset Filters
@@ -233,12 +290,8 @@ const RoommatesPage = () => {
             {likedRoommates.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {likedRoommates.map((roommate) => (
-                  <div key={roommate.id} className="bg-white rounded-lg shadow-sm p-4 flex">
-                    <img
-                      src={roommate.image}
-                      alt={roommate.name}
-                      className="w-16 h-16 rounded-full object-cover mr-4"
-                    />
+                  <div key={roommate._id} className="bg-white rounded-lg shadow-sm p-4 flex">
+                  <img src={`http://localhost:5000${roommate.profileImage || "/uploads/default.png"}`} />
                     <div className="flex-1">
                       <h3 className="font-semibold">{roommate.name}</h3>
                       <p className="text-sm text-gray-500">{roommate.age} • {roommate.gender}</p>
