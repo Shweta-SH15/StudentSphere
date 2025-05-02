@@ -12,20 +12,20 @@ import FriendsPage from "@/pages/FriendsPage";
 import AccommodationPage from "@/pages/AccommodationPage";
 import RestaurantsPage from "@/pages/RestaurantsPage";
 import RoommatesPage from "@/pages/RoommatesPage";
-import NotFound from "@/pages/NotFound";
 import ChatPage from "@/pages/ChatPage";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ChatProvider> { }
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
+  <AuthProvider>
+    <ChatProvider> 
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
               <Route
                 path="/"
                 element={
@@ -78,8 +78,8 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
+        </ChatProvider>
       </AuthProvider>
-    </ChatProvider>
   </QueryClientProvider>
 );
 

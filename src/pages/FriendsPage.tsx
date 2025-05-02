@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
 import { useNavigate } from "react-router-dom";
-
+import { API_BASE } from "@/lib/api";
+import { SOCKET_URL } from "@/lib/api";
 
 const FriendsPage = () => {
   const { isAuthenticated, user } = useAuth();
@@ -48,7 +49,7 @@ const FriendsPage = () => {
 
     const fetchFriends = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/profile/friend-suggestions', {
+        const response = await fetch(`${API_BASE}profile/friend-suggestions`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -64,7 +65,7 @@ const FriendsPage = () => {
     
     const fetchLiked = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/profile/friends', {
+        const response = await fetch(`${API_BASE}profile/friends`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -109,7 +110,7 @@ const FriendsPage = () => {
 
     if (likedFriend) {
       try {
-        const res = await fetch('http://localhost:5000/api/swipe/friend', {
+        const res = await fetch(`${API_BASE}swipe/friend`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ const FriendsPage = () => {
             {filteredFriends.length > 0 ? (
               <SwipeCard
                 id={currentFriend._id}
-                image={`http://localhost:5000${currentFriend.profileImage || '/uploads/default.png'}`}
+                image={`${SOCKET_URL}${currentFriend.profileImage || '/uploads/default.png'}`}
                 title={currentFriend.name}
                 subtitle={`${currentFriend.age} • ${currentFriend.nationality}`}
                 details={
@@ -215,7 +216,7 @@ const FriendsPage = () => {
                 {likedFriends.map((friend) => (
                   <div key={friend._id} className="bg-white rounded-lg shadow-sm p-4 flex">
                     <img
-                      src={`http://localhost:5000${friend.profileImage || '/uploads/default.png'}`}
+                      src={`${SOCKET_URL}${friend.profileImage || '/uploads/default.png'}`}
                       alt={friend.name}
                       className="w-16 h-16 rounded-full object-cover mr-4"
                     />

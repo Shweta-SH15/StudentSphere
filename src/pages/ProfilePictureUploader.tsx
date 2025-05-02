@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
+import { API_BASE } from "@/lib/api";
+import { SOCKET_URL } from "@/lib/api";
 
 const ProfilePictureUploader = () => {
   const { user, updateUser } = useAuth(); // assuming updateUser updates user context + localStorage
@@ -26,7 +28,7 @@ const ProfilePictureUploader = () => {
     formData.append("image", selectedFile);
 
     try {
-      const res = await fetch("http://localhost:5000/api/upload/profile", {
+      const res = await fetch(`${API_BASE}/upload/profile`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("immigrantConnect_token")}`,

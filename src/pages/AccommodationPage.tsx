@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
+import { API_BASE } from "@/lib/api";
+import { SOCKET_URL } from "@/lib/api";
 
 const AccommodationPage = () => {
   const { isAuthenticated } = useAuth();
@@ -46,7 +48,7 @@ const AccommodationPage = () => {
 
     const fetchAccommodations = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/accommodations', {
+        const res = await fetch(`${API_BASE}/accommodations`, {          
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,7 +64,7 @@ const AccommodationPage = () => {
 
     const fetchLiked = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/profile/accommodations', {
+        const res = await fetch(`${API_BASE}/profile/accommodations`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -115,7 +117,7 @@ const AccommodationPage = () => {
 
     if (likedAccommodation) {
       try {
-        const res = await fetch('http://localhost:5000/api/swipe/accommodation', {
+        const res = await fetch(`${API_BASE}/swipe/accommodation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -177,7 +179,7 @@ const AccommodationPage = () => {
             {filteredAccommodations.length > 0 ? (
               <SwipeCard
                 id={currentAccommodation._id}
-                image={`http://localhost:5000${currentAccommodation.image}`}
+                image={`${SOCKET_URL}${currentAccommodation.image}`}
                 title={currentAccommodation.title}
                 subtitle={`${currentAccommodation.location} • ${currentAccommodation.price}`}
                 details={
@@ -221,7 +223,7 @@ const AccommodationPage = () => {
                   <div key={accommodation._id} className="bg-[#0f1628] rounded-lg border border-gray-800 p-4">
                     <div className="flex flex-col md:flex-row gap-4">
                       <img
-                        src={`http://localhost:5000${accommodation.image}`}
+                        src={`${SOCKET_URL}${accommodation.image}`}
                         alt={accommodation.title}
                         className="w-full md:w-32 h-32 object-cover rounded"
                       />

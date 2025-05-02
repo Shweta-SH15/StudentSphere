@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
+import { API_BASE } from "@/lib/api";
+import { SOCKET_URL } from "@/lib/api";
 
 const RoommatesPage = () => {
   const { isAuthenticated } = useAuth();
@@ -46,7 +48,7 @@ const RoommatesPage = () => {
   
     const fetchRoommates = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/profile/roommate-suggestions", {
+        const res = await fetch(`${API_BASE}/profile/roommate-suggestions`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,7 +64,7 @@ const RoommatesPage = () => {
   
     const fetchLikedRoommates = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/profile/roommates", {
+        const res = await fetch(`${API_BASE}/profile/roommates`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -113,7 +115,7 @@ const RoommatesPage = () => {
   
     if (likedRoommate) {
       try {
-        const res = await fetch("http://localhost:5000/api/swipe/roommate", {
+        const res = await fetch(`${API_BASE}/swipe/roommate`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -168,7 +170,7 @@ const RoommatesPage = () => {
             {filteredRoommates.length > 0 ? (
               <SwipeCard
                 id={currentRoommate._id}
-                image={`http://localhost:5000${currentRoommate.profileImage || "/uploads/default.png"}`}
+                image={`${SOCKET_URL}${currentRoommate.profileImage || "/uploads/default.png"}`}
                 title={currentRoommate.name}
                 subtitle={`${currentRoommate.age} • ${currentRoommate.gender} • ${currentRoommate.occupation}`}
                 details={
@@ -222,7 +224,7 @@ const RoommatesPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {likedRoommates.map((roommate) => (
                   <div key={roommate._id} className="bg-white rounded-lg shadow-sm p-4 flex">
-                  <img src={`http://localhost:5000${roommate.profileImage || "/uploads/default.png"}`} />
+                  <img src={`${SOCKET_URL}${roommate.profileImage || "/uploads/default.png"}`} />
                     <div className="flex-1">
                       <h3 className="font-semibold">{roommate.name}</h3>
                       <p className="text-sm text-gray-500">{roommate.age} • {roommate.gender}</p>

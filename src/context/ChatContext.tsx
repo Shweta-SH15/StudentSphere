@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
-
+import { SOCKET_URL } from "@/lib/api";
 interface Message {
   from: string;
   to: string;
@@ -20,7 +20,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let newSocket: Socket | null = null;
   
     if (user) {
-      newSocket = io("http://localhost:5000", {
+      newSocket = io(SOCKET_URL, {
         auth: { tokenUserId: user._id }
       });
   

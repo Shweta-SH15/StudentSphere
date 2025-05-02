@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
-
+import { API_BASE } from "@/lib/api";
+import { SOCKET_URL } from "@/lib/api";
 const RestaurantsPage = () => {
   const { isAuthenticated } = useAuth();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -46,7 +47,7 @@ const RestaurantsPage = () => {
   
     const fetchRestaurants = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/restaurants', {
+        const res = await fetch(`${API_BASE}/restaurants`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -62,7 +63,7 @@ const RestaurantsPage = () => {
   
     const fetchFavorites = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/profile/restaurants', {
+        const res = await fetch(`${API_BASE}/profile/restaurants`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -110,7 +111,7 @@ const RestaurantsPage = () => {
     }
   
     try {
-      const res = await fetch('http://localhost:5000/api/swipe/restaurant', {
+      const res = await fetch(`${API_BASE}/swipe/restaurant`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
