@@ -9,9 +9,12 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({ name, email, password: hashedPassword });
-        res.json(newUser);
+
+        // Remove password before sending response
+        const { password: pwd, ...safeUser } = newUser.toObject();
+        res.json(safeUser);
     } catch (error) {
-        console.error(error); // show exact error
+        console.error(error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -28,7 +31,10 @@ exports.login = async (req, res) => {
 
         const token = jwt.sign({ id: user._id }, jwtSecret, { expiresIn: '7d' });
 
-        res.json({ token, user });
+        // Remove password before sending response
+        const { password: pwd, ...safeUser } = user.toObject();
+
+        res.json({ token, user: safeUser });
     } catch (error) {
         res.status(500).json({ error: 'Login failed' });
     }

@@ -7,7 +7,7 @@ import { SOCKET_URL } from "@/lib/api";
 
 const ProfilePictureUploader = () => {
   const { user, updateUser } = useAuth(); // assuming updateUser updates user context + localStorage
-  const [preview, setPreview] = useState(user?.profileImage ? `http://localhost:5000${user.profileImage}` : "");
+  const [preview, setPreview] = useState(user?.profileImage ? `${API_BASE}${user.profileImage}` : "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
