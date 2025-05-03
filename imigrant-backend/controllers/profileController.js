@@ -21,8 +21,7 @@ exports.getLikedRestaurants = async (req, res) => {
     const user = await User.findById(req.user.id).populate('likedRestaurants');
     res.json(user.likedRestaurants);
 };
-
-const getFriendSuggestions = async (req, res) => {
+exports.getFriendSuggestions = async (req, res) => {
     try {
         const currentUser = await User.findById(req.user.id);
         const suggestions = await User.find({
@@ -35,7 +34,7 @@ const getFriendSuggestions = async (req, res) => {
     }
 };
 
-const getRoommateSuggestions = async (req, res) => {
+exports.getRoommateSuggestions = async (req, res) => {
     try {
         const currentUser = await User.findById(req.user.id);
         const suggestions = await User.find({

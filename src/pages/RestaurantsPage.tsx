@@ -42,9 +42,9 @@ const RestaurantsPage = () => {
       setIsAuthModalOpen(true);
       return;
     }
-  
+
     const token = localStorage.getItem('immigrantConnect_token');
-  
+
     const fetchRestaurants = async () => {
       try {
         const res = await fetch(`${API_BASE}/restaurants`, {
@@ -60,7 +60,7 @@ const RestaurantsPage = () => {
         console.error(err);
       }
     };
-  
+
     const fetchFavorites = async () => {
       try {
         const res = await fetch(`${API_BASE}/profile/restaurants`, {
@@ -75,18 +75,18 @@ const RestaurantsPage = () => {
         console.error(err);
       }
     };
-  
+
     fetchRestaurants();
     fetchFavorites();
   }, [isAuthenticated]);
-  
+
 
   const handleFilterChange = (filterId: string, value: string) => {
     if (value === "") {
       setFilteredRestaurants(allRestaurants);
     } else {
       let filtered = allRestaurants;
-  
+
       if (filterId === "cuisine") {
         filtered = filtered.filter(r => r.cuisine === value);
       } else if (filterId === "price") {
@@ -95,21 +95,21 @@ const RestaurantsPage = () => {
         const threshold = parseFloat(value.replace("+", ""));
         filtered = filtered.filter(r => r.rating >= threshold);
       }
-  
+
       setFilteredRestaurants(filtered);
     }
   };
-  
+
   const handleAddToFavorites = async (restaurant) => {
     const token = localStorage.getItem('immigrantConnect_token');
-  
+
     if (favoriteRestaurants.some(r => r._id === restaurant._id)) {
       toast("Already Saved", {
         description: `${restaurant.name} is already in your favorites`,
       });
       return;
     }
-  
+
     try {
       const res = await fetch(`${API_BASE}/swipe/restaurant`, {
         method: 'POST',
@@ -119,10 +119,10 @@ const RestaurantsPage = () => {
         },
         body: JSON.stringify({ restaurantId: restaurant._id }),
       });
-  
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to like restaurant');
-  
+
       setFavoriteRestaurants([...favoriteRestaurants, restaurant]);
       toast("Restaurant Saved!", {
         description: `${restaurant.name} added to your favorites`,
@@ -132,7 +132,7 @@ const RestaurantsPage = () => {
       console.error(err);
     }
   };
-  
+
 
   const handleRemoveFromFavorites = (id: string) => {
     setFavoriteRestaurants(favoriteRestaurants.filter(restaurant => restaurant.id !== id));
@@ -167,7 +167,7 @@ const RestaurantsPage = () => {
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="h-64 overflow-hidden">
                   <img
-                    src={selectedRestaurant.image}
+                    src={`${SOCKET_URL}${selectedRestaurant.image || '/uploads/default.png'}`}
                     alt={selectedRestaurant.name}
                     className="w-full h-full object-cover"
                   />
@@ -226,7 +226,7 @@ const RestaurantsPage = () => {
                   <Card key={restaurant.id} className="overflow-hidden hover:shadow-md transition-shadow">
                     <div className="h-48 overflow-hidden">
                       <img
-                        src={restaurant.image}
+                        src={`${SOCKET_URL}${restaurant.image || '/uploads/default.png'}`} 
                         alt={restaurant.name}
                         className="w-full h-full object-cover"
                       />
@@ -287,7 +287,7 @@ const RestaurantsPage = () => {
                   <Card key={restaurant._id} className="overflow-hidden">
                     <div className="h-32 overflow-hidden">
                       <img
-                        src={'http://localhost:5000${restaurant.image}'}
+                        src={`${SOCKET_URL}${restaurant.image}`}
                         alt={restaurant.name}
                         className="w-full h-full object-cover"
                       />

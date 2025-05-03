@@ -3,6 +3,7 @@ import { toast } from "@/components/ui/sonner";
 import { API_BASE } from "@/lib/api";
 
 interface User {
+  token: any;
   _id: string;
   name: string;
   email: string;
