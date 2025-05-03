@@ -21,3 +21,29 @@ exports.getLikedRestaurants = async (req, res) => {
     const user = await User.findById(req.user.id).populate('likedRestaurants');
     res.json(user.likedRestaurants);
 };
+
+const getFriendSuggestions = async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        const suggestions = await User.find({
+            _id: { $ne: currentUser._id, $nin: currentUser.likedFriends }
+        }).select("-password");
+
+        res.json(suggestions);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get friend suggestions" });
+    }
+};
+
+const getRoommateSuggestions = async (req, res) => {
+    try {
+        const currentUser = await User.findById(req.user.id);
+        const suggestions = await User.find({
+            _id: { $ne: currentUser._id, $nin: currentUser.likedRoommates }
+        }).select("-password");
+
+        res.json(suggestions);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to get roommate suggestions" });
+    }
+};
