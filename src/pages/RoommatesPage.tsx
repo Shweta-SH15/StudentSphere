@@ -183,42 +183,48 @@ const RoommatesPage = () => {
 
             {filteredRoommates.length > 0 ? (
               <SwipeCard
-                id={currentRoommate._id}
-                image={`${SOCKET_URL}${currentRoommate.profileImage || "/uploads/default.png"}`}
-                title={currentRoommate.name}
-                subtitle={`${currentRoommate.age} • ${currentRoommate.gender} • ${currentRoommate.occupation}`}
-                details={
-                  <div className="space-y-3">
-                    <div className="flex flex-col gap-1 text-sm">
-                      <p><span className="font-medium">Budget:</span> {currentRoommate.budget}</p>
-                      <p><span className="font-medium">Move-in Date:</span> {currentRoommate.moveInDate}</p>
-                    </div>
-                    <p className="text-sm">{currentRoommate.bio}</p>
-                    <div>
-                      <p className="text-xs font-medium mb-1">Lifestyle:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(currentRoommate.lifestyle || []).map((item, index) => (
+              id={currentRoommate._id}
+              image={`${SOCKET_URL}${currentRoommate.profileImage || "/uploads/default.png"}`}
+              title={currentRoommate.name}
+              subtitle={`${currentRoommate.age || "Not provided"} • ${currentRoommate.gender || "Not provided"}`}
+              details={
+                <div className="space-y-3">
+                  <p className="text-sm">{currentRoommate.bio || "No bio provided."}</p>
+                  <div>
+                    <p className="text-xs font-medium mb-1">Lifestyle:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(currentRoommate.lifestyle) && currentRoommate.lifestyle.length > 0 ? (
+                        currentRoommate.lifestyle.map((item: string, index: number) => (
                           <Badge key={index} variant="secondary" className="bg-accent-green text-green-700">
                             {item}
                           </Badge>
-                        ))}
-                      </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-500">Not provided</p>
+                      )}
                     </div>
-                    <div>
-                      <p className="text-xs font-medium mb-1">Interests:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {(currentRoommate.interests || []).map((interest, index) => (
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium mb-1">Interests:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(currentRoommate.interests) && currentRoommate.interests.length > 0 ? (
+                        currentRoommate.interests.map((interest: string, index: number) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {interest}
                           </Badge>
-                        ))}
-                      </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-500">Not provided</p>
+                      )}
                     </div>
                   </div>
-                }
-                onLike={handleLike}
-                onDislike={handleDislike}
-              />
+                </div>
+              }
+              onLike={handleLike}
+              onDislike={handleDislike}
+            />
+            
+            
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">No roommates found matching your filters.</p>

@@ -9,10 +9,13 @@ interface User {
   email: string;
   profileImage?: string;
   nationality?: string;
-  interest?: string;
   language?: string; 
   bio?: string;
   about?: string;
+  gender?: string;
+  age?: number;
+  lifestyle?: string[];
+  interest?: string[];
 }
 
 interface AuthContextType {

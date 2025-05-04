@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const lifestyleOptions = ["Non-smoker", "Early Riser", "Night Owl", "Pet Lover", "Clean"];
+const interestOptions = ["Sports", "Music", "Travel", "Food", "Movies"];
 
 const ProfilePage = () => {
   const { user, setUser } = useAuth();
@@ -12,22 +16,37 @@ const ProfilePage = () => {
 
   const [name, setName] = useState("");
   const [nationality, setNationality] = useState("");
-  const [interest, setInterest] = useState("");
+  const [interest, setInterest] = useState<string[]>([]);
   const [language, setLanguage] = useState("");
   const [bio, setBio] = useState("");
   const [image, setImage] = useState("");
+  const [gender, setGender] = useState("");
+  const [age, setAge] = useState<number | "">("");
+  const [lifestyle, setLifestyle] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setNationality(user.nationality || "");
-      setInterest(user.interest || "");
+      setInterest(user.interest || []);
       setLanguage(user.language || "");
       setBio(user.bio || "");
       setImage(user.profileImage || "");
+      setGender(user.gender || "");
+      setAge(user.age || "");
+      setLifestyle(user.lifestyle || []);
     }
   }, [user]);
+
+  const handleCheckboxChange = (value: string, list: string[], setter: (val: string[]) => void) => {
+    if (list.includes(value)) {
+      setter(list.filter(item => item !== value));
+    } else {
+      setter([...list, value]);
+    }
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,7 +84,17 @@ const ProfilePage = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name, nationality, interest, language, bio, profileImage: image }),
+        body: JSON.stringify({
+          name,
+          nationality,
+          interest,
+          language,
+          bio,
+          profileImage: image,
+          gender,
+          age,
+          lifestyle,
+        }),
       });
 
       const data = await res.json();
@@ -74,6 +103,7 @@ const ProfilePage = () => {
       setUser(data);
       localStorage.setItem("immigrantConnect_user", JSON.stringify(data));
       toast("Profile updated successfully!");
+      setIsEditing(false);
     } catch (err: any) {
       toast.error(err.message || "Failed to update profile");
     }
@@ -81,24 +111,76 @@ const ProfilePage = () => {
 
   return (
     <div className="max-w-xl mx-auto py-8 px-4">
-      <h2 className="text-3xl font-bold mb-6 text-center">Edit Profile</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center">Your Profile</h2>
 
-      <div className="mb-4 text-center">
-        <img
-          src={image ? `${SOCKET_URL}${image}` : "/uploads/default.png"}
-          alt="Profile"
-          className="w-24 h-24 rounded-full mx-auto object-cover"
-        />
-        <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
-      </div>
+      {!isEditing ? (
+        <div className="space-y-4 text-left">
+          <img src={image ? `${SOCKET_URL}${image}` : "/uploads/default.png"} className="w-24 h-24 rounded-full mx-auto object-cover" />
+          <p><strong>Name:</strong> {name}</p>
+          <p><strong>Nationality:</strong> {nationality}</p>
+          <p><strong>Interest:</strong> {interest.join(", ")}</p>
+          <p><strong>Language:</strong> {language}</p>
+          <p><strong>Bio:</strong> {bio}</p>
+          <p><strong>Gender:</strong> {gender}</p>
+          <p><strong>Age:</strong> {age}</p>
+          <p><strong>Lifestyle:</strong> {lifestyle.join(", ")}</p>
+          <Button onClick={() => setIsEditing(true)} className="w-full bg-primary">Edit Profile</Button>
+        </div>
+      ) : (
+        <div>
+          <div className="mb-4 text-center">
+            <img
+              src={image ? `${SOCKET_URL}${image}` : "/uploads/default.png"}
+              alt="Profile"
+              className="w-24 h-24 rounded-full mx-auto object-cover"
+            />
+            <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
+          </div>
 
-      <Input className="mb-3" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} />
-      <Input className="mb-3" placeholder="Nationality" value={nationality} onChange={e => setNationality(e.target.value)} />
-      <Input className="mb-3" placeholder="Interest" value={interest} onChange={e => setInterest(e.target.value)} />
-      <Input className="mb-3" placeholder="Language" value={language} onChange={e => setLanguage(e.target.value)} />
-      <Textarea className="mb-4" placeholder="Your Bio" value={bio} onChange={e => setBio(e.target.value)} />
+          <Input className="mb-3" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} />
+          <Input className="mb-3" placeholder="Nationality" value={nationality} onChange={e => setNationality(e.target.value)} />
+          <Input className="mb-3" placeholder="Language" value={language} onChange={e => setLanguage(e.target.value)} />
+          <Textarea className="mb-4" placeholder="Your Bio" value={bio} onChange={e => setBio(e.target.value)} />
 
-      <Button onClick={handleSave} className="w-full bg-primary hover:bg-secondary">Save Changes</Button>
+          <select className="mb-3 w-full border px-2 py-2" value={gender} onChange={(e) => setGender(e.target.value)}>
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <Input className="mb-3" type="number" placeholder="Age" value={age} onChange={e => setAge(Number(e.target.value))} />
+
+          <div className="mb-4">
+            <p className="font-medium mb-1">Lifestyle:</p>
+            <div className="flex flex-wrap gap-2">
+              {lifestyleOptions.map(option => (
+                <label key={option} className="flex items-center gap-2">
+                  <Checkbox checked={lifestyle.includes(option)} onCheckedChange={() => handleCheckboxChange(option, lifestyle, setLifestyle)} />
+                  {option}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <p className="font-medium mb-1">Interests:</p>
+            <div className="flex flex-wrap gap-2">
+              {interestOptions.map(option => (
+                <label key={option} className="flex items-center gap-2">
+                  <Checkbox checked={interest.includes(option)} onCheckedChange={() => handleCheckboxChange(option, interest, setInterest)} />
+                  {option}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <Button onClick={handleSave} className="w-full bg-primary">Save Changes</Button>
+            <Button onClick={() => setIsEditing(false)} variant="outline" className="w-full">Cancel</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

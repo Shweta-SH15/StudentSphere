@@ -50,21 +50,28 @@ exports.getRoommateSuggestions = async (req, res) => {
 exports.updateProfile = async (req, res) => {
     try {
       const userId = req.user.id;
-      const { name, nationality, interest, language, bio, profileImage } = req.body;
+      const updateData = {
+        name: req.body.name,
+        nationality: req.body.nationality,
+        language: req.body.language,
+        bio: req.body.bio,
+        profileImage: req.body.profileImage,
+        gender: req.body.gender,
+        age: req.body.age,
+        lifestyle: req.body.lifestyle,
+        interest: req.body.interest,
+      };
   
       const updatedUser = await User.findByIdAndUpdate(
         userId,
-        { name, nationality, interest, language, bio, profileImage },
+        { $set: updateData },
         { new: true }
       );
   
-      if (!updatedUser) {
-        return res.status(404).json({ error: "User not found" });
-      }
-  
       res.json(updatedUser);
-    } catch (err) {
-      console.error("Update error:", err);
-      res.status(500).json({ error: "Server error while updating profile" });
+    } catch (error) {
+      console.error("Update profile error:", error);
+      res.status(500).json({ error: "Failed to update profile" });
     }
   };
+  
