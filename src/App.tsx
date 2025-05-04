@@ -13,19 +13,22 @@ import AccommodationPage from "@/pages/AccommodationPage";
 import RestaurantsPage from "@/pages/RestaurantsPage";
 import RoommatesPage from "@/pages/RoommatesPage";
 import ChatPage from "@/pages/ChatPage";
+import ProfilePage from "@/pages/ProfilePage";
+import FavoritesPage from "@/pages/FavoritesPage";
+import MessagesPage from "@/pages/MessagesPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-  <AuthProvider>
-    <ChatProvider> 
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
+    <AuthProvider>
+      <ChatProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
               <Route
                 path="/"
                 element={
@@ -42,6 +45,31 @@ const App = () => (
                   </MainLayout>
                 }
               />
+              <Route
+                path="/profile"
+                element={
+                  <MainLayout>
+                    <ProfilePage />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/favorites"
+                element={
+                  <MainLayout>
+                    <FavoritesPage />
+                  </MainLayout>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <MainLayout>
+                    <MessagesPage />
+                  </MainLayout>
+                }
+              />
+
               <Route
                 path="/accommodation"
                 element={
@@ -78,8 +106,8 @@ const App = () => (
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
-        </ChatProvider>
-      </AuthProvider>
+      </ChatProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

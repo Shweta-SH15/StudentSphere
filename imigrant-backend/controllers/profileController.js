@@ -46,3 +46,25 @@ exports.getRoommateSuggestions = async (req, res) => {
         res.status(500).json({ error: "Failed to get roommate suggestions" });
     }
 };
+
+exports.updateProfile = async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { name, nationality, interest, language, bio, profileImage } = req.body;
+  
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name, nationality, interest, language, bio, profileImage },
+        { new: true }
+      );
+  
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      res.json(updatedUser);
+    } catch (err) {
+      console.error("Update error:", err);
+      res.status(500).json({ error: "Server error while updating profile" });
+    }
+  };

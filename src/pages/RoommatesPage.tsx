@@ -11,12 +11,26 @@ import { toast } from "@/components/ui/sonner";
 import { API_BASE } from "@/lib/api";
 import { SOCKET_URL } from "@/lib/api";
 
+type Roommate = {
+  _id: string;
+  name: string;
+  age: number;
+  gender: string;
+  occupation?: string;
+  budget?: string;
+  moveInDate?: string;
+  profileImage?: string;
+  bio?: string;
+  lifestyle?: string[];
+  interests?: string[];
+};
+
 const RoommatesPage = () => {
   const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [allRoommates, setAllRoommates] = useState([]);
-  const [likedRoommates, setLikedRoommates] = useState([]);
-  const [filteredRoommates, setFilteredRoommates] = useState([]);  
+  const [allRoommates, setAllRoommates] = useState<Roommate[]>([]);
+  const [likedRoommates, setLikedRoommates] = useState<Roommate[]>([]);
+  const [filteredRoommates, setFilteredRoommates] = useState<Roommate[]>([]);  
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
 
@@ -43,9 +57,9 @@ const RoommatesPage = () => {
       setIsAuthModalOpen(true);
       return;
     }
-  
+
     const token = localStorage.getItem("immigrantConnect_token");
-  
+
     const fetchRoommates = async () => {
       try {
         const res = await fetch(`${API_BASE}/profile/roommate-suggestions`, {
@@ -61,7 +75,7 @@ const RoommatesPage = () => {
         console.error(err);
       }
     };
-  
+
     const fetchLikedRoommates = async () => {
       try {
         const res = await fetch(`${API_BASE}/profile/roommates`, {
@@ -76,11 +90,11 @@ const RoommatesPage = () => {
         console.error(err);
       }
     };
-  
+
     fetchRoommates();
     fetchLikedRoommates();
   }, [isAuthenticated]);
-  
+
 
   const handleFilterChange = (filterId: string, value: string) => {
     if (value === "") {
@@ -88,7 +102,7 @@ const RoommatesPage = () => {
       setFilteredRoommates(allRoommates);
     } else {
       let filtered;
-      
+
       if (filterId === "gender") {
         filtered = allRoommates.filter(roommate => roommate.gender === value);
       } else if (filterId === "age") {
@@ -103,7 +117,7 @@ const RoommatesPage = () => {
       } else {
         filtered = allRoommates;
       }
-      
+
       setFilteredRoommates(filtered);
       setCurrentIndex(0);
     }
@@ -112,7 +126,7 @@ const RoommatesPage = () => {
   const handleLike = async (id: string) => {
     const token = localStorage.getItem("immigrantConnect_token");
     const likedRoommate = filteredRoommates.find(r => r._id === id); // use _id from MongoDB
-  
+
     if (likedRoommate) {
       try {
         const res = await fetch(`${API_BASE}/swipe/roommate`, {
@@ -123,10 +137,10 @@ const RoommatesPage = () => {
           },
           body: JSON.stringify({ roommateId: likedRoommate._id }),
         });
-  
+
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to like roommate");
-  
+
         setLikedRoommates([...likedRoommates, likedRoommate]);
         toast("Roommate Saved!", {
           description: `You matched with ${likedRoommate.name}`,
@@ -135,10 +149,10 @@ const RoommatesPage = () => {
         toast.error(err.message || "Could not like roommate");
       }
     }
-  
+
     setCurrentIndex(prev => (prev + 1) % filteredRoommates.length);
   };
-  
+
 
   const handleDislike = (id: string) => {
     // Move to next card
@@ -157,16 +171,16 @@ const RoommatesPage = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-6">Find Roommates</h1>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="discover">Discover</TabsTrigger>
             <TabsTrigger value="liked">Liked ({likedRoommates.length})</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="discover" className="mt-0">
             <FilterBar options={filterOptions} onFilterChange={handleFilterChange} />
-            
+
             {filteredRoommates.length > 0 ? (
               <SwipeCard
                 id={currentRoommate._id}
@@ -183,7 +197,7 @@ const RoommatesPage = () => {
                     <div>
                       <p className="text-xs font-medium mb-1">Lifestyle:</p>
                       <div className="flex flex-wrap gap-2">
-                        {currentRoommate.lifestyle.map((item, index) => (
+                        {(currentRoommate.lifestyle || []).map((item, index) => (
                           <Badge key={index} variant="secondary" className="bg-accent-green text-green-700">
                             {item}
                           </Badge>
@@ -193,7 +207,7 @@ const RoommatesPage = () => {
                     <div>
                       <p className="text-xs font-medium mb-1">Interests:</p>
                       <div className="flex flex-wrap gap-2">
-                        {currentRoommate.interests.map((interest, index) => (
+                        {(currentRoommate.interests || []).map((interest, index) => (
                           <Badge key={index} variant="outline" className="text-xs">
                             {interest}
                           </Badge>
@@ -208,8 +222,8 @@ const RoommatesPage = () => {
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">No roommates found matching your filters.</p>
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   onClick={() => setFilteredRoommates(allRoommates)}
                   className="mt-2 text-primary"
                 >
@@ -218,13 +232,13 @@ const RoommatesPage = () => {
               </div>
             )}
           </TabsContent>
-          
+
           <TabsContent value="liked">
             {likedRoommates.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {likedRoommates.map((roommate) => (
                   <div key={roommate._id} className="bg-white rounded-lg shadow-sm p-4 flex">
-                  <img src={`${SOCKET_URL}${roommate.profileImage || "/uploads/default.png"}`} />
+                    <img src={`${SOCKET_URL}${roommate.profileImage || "/uploads/default.png"}`} />
                     <div className="flex-1">
                       <h3 className="font-semibold">{roommate.name}</h3>
                       <p className="text-sm text-gray-500">{roommate.age} • {roommate.gender}</p>
@@ -243,8 +257,8 @@ const RoommatesPage = () => {
             ) : (
               <div className="text-center py-12">
                 <p className="text-gray-500">You haven't liked any potential roommates yet.</p>
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   onClick={() => setActiveTab("discover")}
                   className="mt-2 text-primary"
                 >
@@ -256,9 +270,9 @@ const RoommatesPage = () => {
         </Tabs>
       </div>
 
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
         defaultView="login"
       />
     </div>

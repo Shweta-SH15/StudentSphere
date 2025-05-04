@@ -9,7 +9,9 @@ interface User {
   email: string;
   profileImage?: string;
   nationality?: string;
-  interest?: string[];
+  interest?: string;
+  language?: string; 
+  bio?: string;
   about?: string;
 }
 
@@ -24,6 +26,7 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: Partial<User>) => void;
   updateUser: (user: User) => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -124,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateUser,
         loginWithGoogle,
         loginWithFacebook,
+        setUser,
       }}
     >
       {children}

@@ -6,14 +6,18 @@ const UserSchema = new mongoose.Schema({
     password: String,
     nationality: String,
     interest: [String],
-    language: [String],
+    language: [String], // ✅ already correct (just make sure frontend uses array)
+    bio: String,        // ✅ add this
+    profileImage: String, // ✅ add this
+
     gender: String,
     age: Number,
-    lifestyle: String,
+    lifestyle: [String], // ✅ better as array to support multiple options
     propertyType: String,
     location: String,
     priceRange: String,
     cuisinePreference: [String],
+
     likedFriends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     likedRoommates: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     likedAccommodations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accommodation' }],
