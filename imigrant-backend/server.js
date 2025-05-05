@@ -5,7 +5,8 @@ const dotenv = require('dotenv');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-
+const admin = require("firebase-admin");
+const serviceAccount = require("./firebaseServiceAccountKey.json");
 dotenv.config();
 
 const authRoutes = require('./routes/authRoutes');
@@ -37,6 +38,9 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/accommodations', require('./routes/accommodationRoutes'));
 app.use('/api/restaurants', require('./routes/restaurantRoutes'));
+admin.initializeApp({
+  credential: admin.credential.cert(require("./firebaseServiceAccountKey.json")), // Download this from Firebase console > Project settings > Service accounts
+});
 
 // ===== MongoDB Connection =====
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })

@@ -42,7 +42,17 @@ const LoginForm = ({ switchToSignup, onSuccess }: LoginFormProps) => {
           <Button type="submit" className="w-full bg-primary hover:bg-secondary" disabled={isLoading}>
             {isLoading ? "Loading..." : "Login"}
           </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full mt-2"
+            onClick={loginWithGoogle}
+          >
+            Continue with Google
+          </Button>
         </form>
+
 
         <div className="text-center mt-4 text-sm text-gray-500">
           Don’t have an account?{" "}

@@ -46,7 +46,18 @@ const SignupForm = ({ switchToLogin, onSuccess }: SignupFormProps) => {
           <Button type="submit" className="w-full bg-primary hover:bg-secondary" disabled={isLoading}>
             {isLoading ? "Creating..." : "Sign Up"}
           </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full mt-2"
+            onClick={loginWithGoogle}
+          >
+            Sign up with Google
+          </Button>
         </form>
+
+
 
         <div className="text-center mt-4 text-sm text-gray-500">
           Already have an account?{" "}

@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 import { API_BASE } from "@/lib/api";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 interface User {
   token: any;
@@ -47,52 +50,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, []);
 
+  // const login = async (email: string, password: string) => {
+  //   try {
+  //     const response = await fetch(`${API_BASE}/auth/login`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ email, password })
+  //     });
+
+  //     const data = await response.json();
+  //     if (!response.ok) throw new Error(data.error || 'Login failed');
+
+  //     localStorage.setItem('immigrantConnect_token', data.token);
+  //     localStorage.setItem('immigrantConnect_user', JSON.stringify(data.user));
+  //     setUser(data.user);
+  //   } catch (error: any) {
+  //     toast.error(error.message || 'Login error');
+  //   }
+  // };
+
+  // const signup = async (name: string, email: string, password: string) => {
+  //   try {
+  //     const response = await fetch(`${API_BASE}/auth/register`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ name, email, password })
+  //     });
+
+  //     const data = await response.json();
+  //     if (!response.ok) throw new Error(data.error || 'Signup failed');
+
+  //     await login(email, password); // auto-login after signup
+  //   } catch (error: any) {
+  //     toast.error(error.message || 'Signup error');
+  //   }
+  // };
+
+  // const logout = () => {
+  //   setUser(null);
+  //   localStorage.removeItem('immigrantConnect_token');
+  //   localStorage.removeItem('immigrantConnect_user');
+  // };
+
   const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch(`${API_BASE}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
+    await signInWithEmailAndPassword(auth, email, password);
+    const user = auth.currentUser;
+    if (user) {
+      setUser({
+        _id: user.uid,
+        name: user.displayName || "",
+        email: user.email || "",
+        profileImage: user.photoURL || "",
+        token: await user.getIdToken(),
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Login failed');
-
-      localStorage.setItem('immigrantConnect_token', data.token);
-      localStorage.setItem('immigrantConnect_user', JSON.stringify(data.user));
-      setUser(data.user);
-    } catch (error: any) {
-      toast.error(error.message || 'Login error');
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(user));
+      localStorage.setItem("immigrantConnect_token", await user.getIdToken());
     }
   };
-
+  
   const signup = async (name: string, email: string, password: string) => {
-    try {
-      const response = await fetch(`${API_BASE}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name, email, password })
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    if (res.user) {
+      setUser({
+        _id: res.user.uid,
+        name,
+        email,
+        profileImage: "",
+        token: await res.user.getIdToken(),
       });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Signup failed');
-
-      await login(email, password); // auto-login after signup
-    } catch (error: any) {
-      toast.error(error.message || 'Signup error');
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(res.user));
+      localStorage.setItem("immigrantConnect_token", await res.user.getIdToken());
     }
   };
-
-  const logout = () => {
+  
+  const logout = async () => {
+    await signOut(auth);
     setUser(null);
-    localStorage.removeItem('immigrantConnect_token');
-    localStorage.removeItem('immigrantConnect_user');
+    localStorage.clear();
   };
-
+  
   const updateProfile = (data: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...data };
@@ -110,7 +150,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithGoogle = async () => {
-    toast.error("Google login is not available yet.");
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken();
+  
+      const newUser = {
+        _id: result.user.uid,
+        name: result.user.displayName || "",
+        email: result.user.email || "",
+        profileImage: result.user.photoURL || "",
+        token,
+      };
+  
+      setUser(newUser);
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(newUser));
+      localStorage.setItem("immigrantConnect_token", token);
+      toast.success("Logged in with Google!");
+    } catch (error: any) {
+      toast.error(error.message || "Google login failed");
+    }
   };
 
   const loginWithFacebook = async () => {

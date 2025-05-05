@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getAuth } from "firebase/auth";
 
 const lifestyleOptions = ["Non-smoker", "Early Riser", "Night Owl", "Pet Lover", "Clean"];
 const interestOptions = ["Sports", "Music", "Travel", "Food", "Movies"];
 
 const ProfilePage = () => {
   const { user, setUser } = useAuth();
-  const token = localStorage.getItem("immigrantConnect_token");
 
   const [name, setName] = useState("");
   const [nationality, setNationality] = useState("");
@@ -41,11 +41,7 @@ const ProfilePage = () => {
   }, [user]);
 
   const handleCheckboxChange = (value: string, list: string[], setter: (val: string[]) => void) => {
-    if (list.includes(value)) {
-      setter(list.filter(item => item !== value));
-    } else {
-      setter([...list, value]);
-    }
+    setter(list.includes(value) ? list.filter(item => item !== value) : [...list, value]);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,10 +50,10 @@ const ProfilePage = () => {
 
     const formData = new FormData();
     formData.append("image", file);
-
     setUploading(true);
 
     try {
+      const token = await getAuth().currentUser?.getIdToken();
       const res = await fetch(`${API_BASE}/upload/profile`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -78,6 +74,7 @@ const ProfilePage = () => {
 
   const handleSave = async () => {
     try {
+      const token = await getAuth().currentUser?.getIdToken();
       const res = await fetch(`${API_BASE}/profile`, {
         method: "PUT",
         headers: {
@@ -129,11 +126,7 @@ const ProfilePage = () => {
       ) : (
         <div>
           <div className="mb-4 text-center">
-            <img
-              src={image ? `${SOCKET_URL}${image}` : "/uploads/default.png"}
-              alt="Profile"
-              className="w-24 h-24 rounded-full mx-auto object-cover"
-            />
+            <img src={image ? `${SOCKET_URL}${image}` : "/uploads/default.png"} alt="Profile" className="w-24 h-24 rounded-full mx-auto object-cover" />
             <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} />
           </div>
 
