@@ -6,6 +6,7 @@ import { auth } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 interface User {
+  avatar: string;
   token: any;
   _id: string;
   name: string;

@@ -53,9 +53,10 @@ const Header = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={user?.avatar} alt={user?.name} />
-                    <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={user?.avatar || "/default-avatar.png"} alt={user?.name || "User"} />
+                    <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
+
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -78,7 +79,7 @@ const Header = () => {
                   <Link to="/messages">Messages</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={logout}
                   className="text-red-500 cursor-pointer"
                 >
@@ -88,14 +89,14 @@ const Header = () => {
             </DropdownMenu>
           ) : (
             <div className="flex space-x-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => openAuthModal("login")}
                 className="text-primary border-primary hover:bg-primary hover:text-white"
               >
                 Log in
               </Button>
-              <Button 
+              <Button
                 onClick={() => openAuthModal("signup")}
                 className="bg-primary hover:bg-secondary text-white"
               >
