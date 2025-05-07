@@ -5,22 +5,37 @@ const dotenv = require('dotenv');
 const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
-const admin = require("firebase-admin");
-const serviceAccount = require("./firebaseServiceAccountKey.json");
+
+// Load environment variables
 dotenv.config();
 
+// Initialize Firebase Admin SDK
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+} catch (err) {
+  console.error('Firebase admin initialization error (possibly already initialized):', err);
+}
+
+// Import routes and middleware
+const verifyFirebaseToken = require('./middleware/verifyFirebaseToken');
 const authRoutes = require('./routes/authRoutes');
 const swipeRoutes = require('./routes/swipeRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const accommodationsRoutes = require('./routes/accommodationRoutes');
+const restaurantsRoutes = require('./routes/restaurantRoutes');
 const Chat = require('./models/Chat');
 
 const app = express();
-const server = http.createServer(app); // ✅ Correct server setup for Socket.IO
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Replace with frontend domain in production
+    origin: "*", // In production, restrict to your frontend domain
     methods: ["GET", "POST"]
   }
 });
@@ -28,48 +43,42 @@ const io = new Server(server, {
 // ===== Middleware =====
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // ✅ Serve uploaded images
+// Serve uploaded images statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ===== Routes =====
+// Public routes (no token required)
 app.use('/api/auth', authRoutes);
-app.use('/api/swipe', swipeRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/accommodations', require('./routes/accommodationRoutes'));
-app.use('/api/restaurants', require('./routes/restaurantRoutes'));
-admin.initializeApp({
-  credential: admin.credential.cert(require("./firebaseServiceAccountKey.json")), // Download this from Firebase console > Project settings > Service accounts
-});
+
+// Protected routes (must pass Firebase ID token)
+app.use('/api/swipe', verifyFirebaseToken, swipeRoutes);
+app.use('/api/profile', verifyFirebaseToken, profileRoutes);
+app.use('/api/chat', verifyFirebaseToken, chatRoutes);
+app.use('/api/upload', verifyFirebaseToken, uploadRoutes);
+// (If needed, protect accommodations/restaurants similarly if they require auth)
+app.use('/api/accommodations', accommodationsRoutes);
+app.use('/api/restaurants', restaurantsRoutes);
 
 // ===== MongoDB Connection =====
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB Connected'))
-  .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+  .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// ===== Socket.IO Chat Setup =====
+// ===== Socket.IO Setup (for chat feature) =====
 io.on('connection', (socket) => {
   const userId = socket.handshake.auth?.tokenUserId;
-
   if (userId) {
-    socket.join(userId); // Join personal room
+    socket.join(userId); // join the user's personal room for direct messages
     console.log(`🟢 User ${userId} connected via socket ${socket.id}`);
   } else {
     console.warn(`⚠️ No tokenUserId provided by socket ${socket.id}`);
   }
 
-  // ✅ Handle incoming message
+  // Handle incoming chat messages
   socket.on('sendMessage', async ({ from, to, text }) => {
     try {
-      const newMessage = await Chat.create({
-        sender: from,
-        receiver: to,
-        text,
-      });
-
-      // ✅ Emit real-time message to receiver
-      io.to(to).emit('receiveMessage', newMessage);
-
+      const newMessage = await Chat.create({ sender: from, receiver: to, text });
+      io.to(to).emit('receiveMessage', newMessage);  // deliver message to receiver in real-time
       console.log(`📨 Message from ${from} to ${to}: ${text}`);
     } catch (err) {
       console.error('❌ Error saving or sending message:', err);

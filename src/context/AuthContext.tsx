@@ -1,19 +1,25 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
-import { API_BASE } from "@/lib/api";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  getIdToken,
+} from "firebase/auth";
 
 interface User {
-  avatar: string;
-  token: any;
   _id: string;
   name: string;
   email: string;
   profileImage?: string;
+  token: string;
   nationality?: string;
-  language?: string; 
+  language?: string;
   bio?: string;
   about?: string;
   gender?: string;
@@ -27,12 +33,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
-  logout: () => void;
-  updateProfile: (data: Partial<User>) => void;
-  updateUser: (user: User) => void;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
 }
 
@@ -43,129 +47,96 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('immigrantConnect_user');
-    const token = localStorage.getItem('immigrantConnect_token');
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const token = await getIdToken(firebaseUser, true);
+        const currentUser: User = {
+          _id: firebaseUser.uid,
+          name: firebaseUser.displayName || "",
+          email: firebaseUser.email || "",
+          profileImage: firebaseUser.photoURL || "",
+          token,
+        };
+        setUser(currentUser);
+        localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
+        localStorage.setItem("immigrantConnect_token", token);
+      } else {
+        setUser(null);
+        localStorage.removeItem("immigrantConnect_user");
+        localStorage.removeItem("immigrantConnect_token");
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // const login = async (email: string, password: string) => {
-  //   try {
-  //     const response = await fetch(`${API_BASE}/auth/login`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify({ email, password })
-  //     });
-
-  //     const data = await response.json();
-  //     if (!response.ok) throw new Error(data.error || 'Login failed');
-
-  //     localStorage.setItem('immigrantConnect_token', data.token);
-  //     localStorage.setItem('immigrantConnect_user', JSON.stringify(data.user));
-  //     setUser(data.user);
-  //   } catch (error: any) {
-  //     toast.error(error.message || 'Login error');
-  //   }
-  // };
-
-  // const signup = async (name: string, email: string, password: string) => {
-  //   try {
-  //     const response = await fetch(`${API_BASE}/auth/register`, {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify({ name, email, password })
-  //     });
-
-  //     const data = await response.json();
-  //     if (!response.ok) throw new Error(data.error || 'Signup failed');
-
-  //     await login(email, password); // auto-login after signup
-  //   } catch (error: any) {
-  //     toast.error(error.message || 'Signup error');
-  //   }
-  // };
-
-  // const logout = () => {
-  //   setUser(null);
-  //   localStorage.removeItem('immigrantConnect_token');
-  //   localStorage.removeItem('immigrantConnect_user');
-  // };
-
   const login = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
-    const user = auth.currentUser;
-    if (user) {
-      setUser({
-        _id: user.uid,
-        name: user.displayName || "",
-        email: user.email || "",
-        profileImage: user.photoURL || "",
-        token: await user.getIdToken(),
-      });
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(user));
-      localStorage.setItem("immigrantConnect_token", await user.getIdToken());
+    try {
+      const res = await signInWithEmailAndPassword(auth, email, password);
+      const token = await getIdToken(res.user, true);
+      const currentUser: User = {
+        _id: res.user.uid,
+        name: res.user.displayName || "",
+        email: res.user.email || "",
+        profileImage: res.user.photoURL || "",
+        token,
+      };
+      setUser(currentUser);
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
+      localStorage.setItem("immigrantConnect_token", token);
+      toast.success("Logged in successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Login failed");
     }
   };
-  
+
   const signup = async (name: string, email: string, password: string) => {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    if (res.user) {
-      setUser({
+    try {
+      const res = await createUserWithEmailAndPassword(auth, email, password);
+      const token = await getIdToken(res.user, true);
+      const currentUser: User = {
         _id: res.user.uid,
         name,
-        email,
-        profileImage: "",
-        token: await res.user.getIdToken(),
-      });
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(res.user));
-      localStorage.setItem("immigrantConnect_token", await res.user.getIdToken());
-    }
-  };
-  
-  const logout = async () => {
-    await signOut(auth);
-    setUser(null);
-    localStorage.clear();
-  };
-  
-  const updateProfile = (data: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...data };
-      setUser(updatedUser);
-      localStorage.setItem('immigrantConnect_user', JSON.stringify(updatedUser));
-      toast("Profile Updated", {
-        description: "Your profile information has been updated.",
-      });
+        email: res.user.email || "",
+        profileImage: res.user.photoURL || "",
+        token,
+      };
+      setUser(currentUser);
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
+      localStorage.setItem("immigrantConnect_token", token);
+      toast.success("Account created successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Signup failed");
     }
   };
 
-  const updateUser = (updatedUser: User) => {
-    setUser(updatedUser);
-    localStorage.setItem("immigrantConnect_user", JSON.stringify(updatedUser));
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      localStorage.removeItem("immigrantConnect_user");
+      localStorage.removeItem("immigrantConnect_token");
+      toast.success("Logged out successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Logout failed");
+    }
   };
 
   const loginWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
-  
-      const newUser = {
+      const token = await getIdToken(result.user, true);
+      const currentUser: User = {
         _id: result.user.uid,
         name: result.user.displayName || "",
         email: result.user.email || "",
         profileImage: result.user.photoURL || "",
         token,
       };
-  
-      setUser(newUser);
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(newUser));
+      setUser(currentUser);
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
       localStorage.setItem("immigrantConnect_token", token);
       toast.success("Logged in with Google!");
     } catch (error: any) {
@@ -174,7 +145,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithFacebook = async () => {
-    toast.error("Facebook login is not available yet.");
+    try {
+      const provider = new FacebookAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const token = await getIdToken(result.user, true);
+      const currentUser: User = {
+        _id: result.user.uid,
+        name: result.user.displayName || "",
+        email: result.user.email || "",
+        profileImage: result.user.photoURL || "",
+        token,
+      };
+      setUser(currentUser);
+      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
+      localStorage.setItem("immigrantConnect_token", token);
+      toast.success("Logged in with Facebook!");
+    } catch (error: any) {
+      toast.error(error.message || "Facebook login failed");
+    }
   };
 
   return (
@@ -186,8 +174,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         signup,
         logout,
-        updateProfile,
-        updateUser,
         loginWithGoogle,
         loginWithFacebook,
         setUser,

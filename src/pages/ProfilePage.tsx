@@ -26,6 +26,7 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
+  // ✅ Populate form fields with user data
   useEffect(() => {
     if (user) {
       setName(user.name || "");
@@ -40,10 +41,12 @@ const ProfilePage = () => {
     }
   }, [user]);
 
+  // ✅ Handle checkbox changes for interests and lifestyle
   const handleCheckboxChange = (value: string, list: string[], setter: (val: string[]) => void) => {
     setter(list.includes(value) ? list.filter(item => item !== value) : [...list, value]);
   };
 
+  // ✅ Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -53,7 +56,7 @@ const ProfilePage = () => {
     setUploading(true);
 
     try {
-      const token = await getAuth().currentUser?.getIdToken();
+      const token = await getAuth().currentUser?.getIdToken(true); // Force refresh
       const res = await fetch(`${API_BASE}/upload/profile`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -63,8 +66,11 @@ const ProfilePage = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Upload failed");
 
-      setImage(data.imageUrl);
-      toast("Profile image updated!");
+      const imageUrl = data.imageUrl;
+      setImage(imageUrl);
+      setUser((prevUser) => prevUser ? { ...prevUser, profileImage: imageUrl } : null);
+      localStorage.setItem("immigrantConnect_user", JSON.stringify({ ...user, profileImage: imageUrl }));
+      toast.success("Profile image updated!");
     } catch (err: any) {
       toast.error(err.message || "Upload failed");
     } finally {
@@ -72,26 +78,38 @@ const ProfilePage = () => {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      const token = await getAuth().currentUser?.getIdToken();
+  // ProfilePage.tsx
+
+const handleSave = async () => {
+  try {
+      const currentUser = getAuth().currentUser;
+      if (!currentUser) {
+          console.error("User not authenticated");
+          toast.error("User not authenticated");
+          return;
+      }
+
+      // Force refresh token to avoid expired tokens
+      const token = await currentUser.getIdToken(true);
+      console.log("Token:", token);
+
       const res = await fetch(`${API_BASE}/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          nationality,
-          interest,
-          language,
-          bio,
-          profileImage: image,
-          gender,
-          age,
-          lifestyle,
-        }),
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+              name,
+              nationality,
+              interest,
+              language,
+              bio,
+              profileImage: image,
+              gender,
+              age,
+              lifestyle,
+          }),
       });
 
       const data = await res.json();
@@ -101,10 +119,12 @@ const ProfilePage = () => {
       localStorage.setItem("immigrantConnect_user", JSON.stringify(data));
       toast("Profile updated successfully!");
       setIsEditing(false);
-    } catch (err: any) {
+  } catch (err) {
+      console.error("Failed to update profile:", err);
       toast.error(err.message || "Failed to update profile");
-    }
-  };
+  }
+};
+
 
   return (
     <div className="max-w-xl mx-auto py-8 px-4">
@@ -135,43 +155,8 @@ const ProfilePage = () => {
           <Input className="mb-3" placeholder="Language" value={language} onChange={e => setLanguage(e.target.value)} />
           <Textarea className="mb-4" placeholder="Your Bio" value={bio} onChange={e => setBio(e.target.value)} />
 
-          <select className="mb-3 w-full border px-2 py-2" value={gender} onChange={(e) => setGender(e.target.value)}>
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
-
-          <Input className="mb-3" type="number" placeholder="Age" value={age} onChange={e => setAge(Number(e.target.value))} />
-
-          <div className="mb-4">
-            <p className="font-medium mb-1">Lifestyle:</p>
-            <div className="flex flex-wrap gap-2">
-              {lifestyleOptions.map(option => (
-                <label key={option} className="flex items-center gap-2">
-                  <Checkbox checked={lifestyle.includes(option)} onCheckedChange={() => handleCheckboxChange(option, lifestyle, setLifestyle)} />
-                  {option}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <p className="font-medium mb-1">Interests:</p>
-            <div className="flex flex-wrap gap-2">
-              {interestOptions.map(option => (
-                <label key={option} className="flex items-center gap-2">
-                  <Checkbox checked={interest.includes(option)} onCheckedChange={() => handleCheckboxChange(option, interest, setInterest)} />
-                  {option}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <Button onClick={handleSave} className="w-full bg-primary">Save Changes</Button>
-            <Button onClick={() => setIsEditing(false)} variant="outline" className="w-full">Cancel</Button>
-          </div>
+          <Button onClick={handleSave} className="w-full bg-primary">Save Changes</Button>
+          <Button onClick={() => setIsEditing(false)} variant="outline" className="w-full">Cancel</Button>
         </div>
       )}
     </div>
