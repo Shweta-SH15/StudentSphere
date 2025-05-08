@@ -3,6 +3,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useChat } from "@/context/ChatContext";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { getAuth } from "firebase/auth";
+import { io } from "socket.io-client";
 
 const ChatPage = () => {
   const { user } = useAuth();
@@ -11,11 +13,48 @@ const ChatPage = () => {
   const receiverId = searchParams.get("with") || "";
   const [text, setText] = useState("");
   const [history, setHistory] = useState([]);
+  const [socket, setSocket] = useState(null);
+
+  // Establish socket connection
+  useEffect(() => {
+    const connectSocket = async () => {
+      try {
+        const currentUser = getAuth().currentUser;
+        if (!currentUser) {
+          console.error("User not authenticated");
+          return;
+        }
+
+        // Force refresh the token
+        const token = await currentUser.getIdToken(true);
+        const socketConnection = io(import.meta.env.VITE_SOCKET_URL, {
+          auth: { token },
+          transports: ["websocket", "polling"],
+        });
+
+        socketConnection.on("connect", () => {
+          console.log("🟢 Connected to socket server:", socketConnection.id);
+        });
+
+        socketConnection.on("disconnect", () => {
+          console.log("🔴 Disconnected from socket server");
+        });
+
+        setSocket(socketConnection);
+      } catch (err) {
+        console.error("Socket connection error:", err);
+      }
+    };
+
+    connectSocket();
+
+    return () => socket?.disconnect();
+  }, []);
 
   // Load chat history from backend
   useEffect(() => {
     if (receiverId && user) {
-      fetch(`http://localhost:5000/api/chat/messages?withUserId=${receiverId}`, {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/chat/messages?withUserId=${receiverId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("immigrantConnect_token")}`
         }
@@ -27,8 +66,8 @@ const ChatPage = () => {
   }, [receiverId, user]);
 
   const handleSend = () => {
-    if (text.trim()) {
-      sendMessage(receiverId, text.trim());
+    if (text.trim() && socket) {
+      socket.emit("sendMessage", { from: user._id, to: receiverId, text: text.trim() });
       setText("");
     }
   };
@@ -52,7 +91,7 @@ const ChatPage = () => {
                 msg.from === user?._id ? "bg-blue-100 self-end" : "bg-gray-200 self-start"
               }`}
             >
-              <p className="text-sm">{msg.message}</p>
+              <p className="text-sm">{msg.text}</p>
               <span className="text-xs text-gray-500">
                 {new Date(msg.timestamp).toLocaleTimeString()}
               </span>

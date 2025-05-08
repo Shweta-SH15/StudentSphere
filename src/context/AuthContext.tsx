@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   onAuthStateChanged,
   getIdToken,
+  getAuth,
 } from "firebase/auth";
 
 interface User {
@@ -91,6 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const getToken = async () => {
+    const currentUser = getAuth().currentUser;
+    return currentUser ? await currentUser.getIdToken(true) : null;
+  };
+  
   const signup = async (name: string, email: string, password: string) => {
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);

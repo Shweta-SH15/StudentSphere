@@ -80,6 +80,8 @@ const ProfilePage = () => {
 
   // ProfilePage.tsx
 
+// ProfilePage.tsx
+
 const handleSave = async () => {
   try {
       const currentUser = getAuth().currentUser;
@@ -89,7 +91,7 @@ const handleSave = async () => {
           return;
       }
 
-      // Force refresh token to avoid expired tokens
+      // ✅ Force refresh token to avoid expired tokens
       const token = await currentUser.getIdToken(true);
       console.log("Token:", token);
 
@@ -115,15 +117,17 @@ const handleSave = async () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Update failed");
 
+      // ✅ Update local user state and storage
       setUser(data);
       localStorage.setItem("immigrantConnect_user", JSON.stringify(data));
-      toast("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
       setIsEditing(false);
-  } catch (err) {
+  } catch (err: any) {
       console.error("Failed to update profile:", err);
       toast.error(err.message || "Failed to update profile");
   }
 };
+
 
 
   return (
