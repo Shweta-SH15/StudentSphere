@@ -1,24 +1,26 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
-import { auth } from "@/lib/firebase";
 import {
-  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  getIdToken,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
   FacebookAuthProvider,
   signInWithPopup,
-  onAuthStateChanged,
-  getIdToken,
-  getAuth,
+  updateProfile,
+  User as FirebaseUser,
+  Auth as FirebaseAuth
 } from "firebase/auth";
+import { API_BASE } from "@/lib/api";
+import { auth } from "@/lib/firebase";  // this is your Auth instance
 
-interface User {
+interface AppUser {
   _id: string;
   name: string;
   email: string;
   profileImage?: string;
-  token: string;
   nationality?: string;
   language?: string;
   bio?: string;
@@ -30,7 +32,7 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -38,162 +40,111 @@ interface AuthContextType {
   logout: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginWithFacebook: () => Promise<void>;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  setUser: React.Dispatch<React.SetStateAction<AppUser | null>>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Helper to fetch your Mongo-backed profile
+  const fetchProfile = async (token: string) => {
+    const res = await fetch(`${API_BASE}/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error((await res.json()).error || "Failed to load profile");
+    return (await res.json()) as AppUser;
+  };
+
+  // Re-fetch profile whenever Firebase auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const token = await getIdToken(firebaseUser, true);
-        const currentUser: User = {
-          _id: firebaseUser.uid,
-          name: firebaseUser.displayName || "",
-          email: firebaseUser.email || "",
-          profileImage: firebaseUser.photoURL || "",
-          token,
-        };
-        setUser(currentUser);
-        localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
-        localStorage.setItem("immigrantConnect_token", token);
+    const unsubscribe = onAuthStateChanged(auth as FirebaseAuth, async (fbUser: FirebaseUser | null) => {
+      if (fbUser) {
+        try {
+          const token = await getIdToken(fbUser, true);
+          const profile = await fetchProfile(token);
+          setUser(profile);
+        } catch (err: any) {
+          console.error("Error loading profile:", err);
+          toast.error(err.message || "Could not load your profile");
+          setUser(null);
+        }
       } else {
         setUser(null);
-        localStorage.removeItem("immigrantConnect_user");
-        localStorage.removeItem("immigrantConnect_token");
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
+  // Email/password login
   const login = async (email: string, password: string) => {
-    try {
-      const res = await signInWithEmailAndPassword(auth, email, password);
-      const token = await getIdToken(res.user, true);
-      const currentUser: User = {
-        _id: res.user.uid,
-        name: res.user.displayName || "",
-        email: res.user.email || "",
-        profileImage: res.user.photoURL || "",
-        token,
-      };
-      setUser(currentUser);
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
-      localStorage.setItem("immigrantConnect_token", token);
-      toast.success("Logged in successfully!");
-    } catch (error: any) {
-      toast.error(error.message || "Login failed");
-    }
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const token = await getIdToken(cred.user, true);
+    const profile = await fetchProfile(token);
+    setUser(profile);
+    toast.success("Logged in successfully!");
   };
 
-  const getToken = async () => {
-    const currentUser = getAuth().currentUser;
-    return currentUser ? await currentUser.getIdToken(true) : null;
-  };
-  
+  // Email/password signup
   const signup = async (name: string, email: string, password: string) => {
-    try {
-      const res = await createUserWithEmailAndPassword(auth, email, password);
-      const token = await getIdToken(res.user, true);
-      const currentUser: User = {
-        _id: res.user.uid,
-        name,
-        email: res.user.email || "",
-        profileImage: res.user.photoURL || "",
-        token,
-      };
-      setUser(currentUser);
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
-      localStorage.setItem("immigrantConnect_token", token);
-      toast.success("Account created successfully!");
-    } catch (error: any) {
-      toast.error(error.message || "Signup failed");
-    }
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    // Use the modular updateProfile helper
+    await updateProfile(cred.user, { displayName: name });
+    const token = await getIdToken(cred.user, true);
+    const profile = await fetchProfile(token);
+    setUser(profile);
+    toast.success("Account created successfully!");
   };
 
+  // Sign out
   const logout = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      localStorage.removeItem("immigrantConnect_user");
-      localStorage.removeItem("immigrantConnect_token");
-      toast.success("Logged out successfully!");
-    } catch (error: any) {
-      toast.error(error.message || "Logout failed");
-    }
+    await signOut(auth);
+    setUser(null);
+    toast.success("Logged out successfully!");
   };
 
+  // Google OAuth
   const loginWithGoogle = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const token = await getIdToken(result.user, true);
-      const currentUser: User = {
-        _id: result.user.uid,
-        name: result.user.displayName || "",
-        email: result.user.email || "",
-        profileImage: result.user.photoURL || "",
-        token,
-      };
-      setUser(currentUser);
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
-      localStorage.setItem("immigrantConnect_token", token);
-      toast.success("Logged in with Google!");
-    } catch (error: any) {
-      toast.error(error.message || "Google login failed");
-    }
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const token = await getIdToken(result.user, true);
+    const profile = await fetchProfile(token);
+    setUser(profile);
+    toast.success("Logged in with Google!");
   };
 
+  // Facebook OAuth
   const loginWithFacebook = async () => {
-    try {
-      const provider = new FacebookAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const token = await getIdToken(result.user, true);
-      const currentUser: User = {
-        _id: result.user.uid,
-        name: result.user.displayName || "",
-        email: result.user.email || "",
-        profileImage: result.user.photoURL || "",
-        token,
-      };
-      setUser(currentUser);
-      localStorage.setItem("immigrantConnect_user", JSON.stringify(currentUser));
-      localStorage.setItem("immigrantConnect_token", token);
-      toast.success("Logged in with Facebook!");
-    } catch (error: any) {
-      toast.error(error.message || "Facebook login failed");
-    }
+    const provider = new FacebookAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const token = await getIdToken(result.user, true);
+    const profile = await fetchProfile(token);
+    setUser(profile);
+    toast.success("Logged in with Facebook!");
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        loading,
-        login,
-        signup,
-        logout,
-        loginWithGoogle,
-        loginWithFacebook,
-        setUser,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated: !!user,
+      loading,
+      login,
+      signup,
+      logout,
+      loginWithGoogle,
+      loginWithFacebook,
+      setUser
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be inside AuthProvider");
+  return ctx;
 };
