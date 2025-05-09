@@ -52,10 +52,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Helper to fetch your Mongo-backed profile
   const fetchProfile = async (token: string) => {
     const res = await fetch(`${API_BASE}/profile`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
-    if (!res.ok) throw new Error((await res.json()).error || "Failed to load profile");
-    return (await res.json()) as AppUser;
+    const body = await res.json();           // ← parse once
+    if (!res.ok) throw new Error(body.error || "Failed to load profile");
+    return body;
   };
 
   // Re-fetch profile whenever Firebase auth state changes

@@ -9,20 +9,20 @@ const {
   getLikedAccommodations,
   getLikedRestaurants
 } = require('../controllers/swipeController');
-const { protect } = require('../middleware/authMiddleware');
+// const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 // Like routes (POST)
-router.post('/friend', protect, likeFriend);
-router.post('/roommate', protect, likeRoommate);
-router.post('/accommodation', protect, likeAccommodation);
-router.post('/restaurant', protect, likeRestaurant);
+router.post('/friend',  likeFriend);
+router.post('/roommate',  likeRoommate);
+router.post('/accommodation',  likeAccommodation);
+router.post('/restaurant',  likeRestaurant);
 
 // Get liked items (GET)
-router.get('/friends', protect, getLikedFriends);
-router.get('/roommates', protect, getLikedRoommates);
-router.get('/accommodations', protect, getLikedAccommodations);
-router.get('/restaurants', protect, getLikedRestaurants);
+router.get('/friends', getLikedFriends);
+router.get('/roommates',  getLikedRoommates);
+router.get('/accommodations',  getLikedAccommodations);
+router.get('/restaurants',  getLikedRestaurants);
 
 module.exports = router;

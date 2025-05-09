@@ -49,7 +49,7 @@ const FriendsPage = () => {
 
     const fetchFriends = async () => {
       try {
-        const response = await fetch(`${API_BASE}profile/friend-suggestions`, {
+        const response = await fetch(`${API_BASE}/profile/friend-suggestions`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -65,7 +65,7 @@ const FriendsPage = () => {
     
     const fetchLiked = async () => {
       try {
-        const response = await fetch(`${API_BASE}profile/friends`, {
+        const response = await fetch(`${API_BASE}/profile/friends`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -110,7 +110,7 @@ const FriendsPage = () => {
 
     if (likedFriend) {
       try {
-        const res = await fetch(`${API_BASE}swipe/friend`, {
+        const res = await fetch(`${API_BASE}/swipe/friend`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

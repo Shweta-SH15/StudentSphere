@@ -79,7 +79,7 @@ module.exports = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
     const decodedToken = await admin.auth().verifyIdToken(token);
-    req.user = { uid: decodedToken.uid, email: decodedToken.email };
+    req.user = { uid: decodedToken.uid, id: decodedToken.uid,email: decodedToken.email };
     next();
   } catch (error) {
     console.error("Firebase token verification failed:", error.message);
