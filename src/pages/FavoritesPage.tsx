@@ -154,6 +154,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/sonner";
+import { auth } from "@/lib/firebase";
 
 const FavoritesPage = () => {
   const { isAuthenticated } = useAuth();  // ✅ Moved this outside of useEffect
@@ -163,51 +164,56 @@ const FavoritesPage = () => {
   const [restaurants, setRestaurants] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        // ✅ Check if the user is authenticated
-        if (!isAuthenticated) return;
+  const fetchFavorites = async () => {
+    try {
+      if (!isAuthenticated) return;
 
-        const token = localStorage.getItem("immigrantConnect_token");
-        if (!token) {
-          toast.error("Authentication token not found. Please log in again.");
-          return;
-        }
-
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [fRes, rRes, aRes, restRes] = await Promise.all([
-          fetch(`${API_BASE}/profile/friends`, { headers }),
-          fetch(`${API_BASE}/profile/roommates`, { headers }),
-          fetch(`${API_BASE}/profile/accommodations`, { headers }),
-          fetch(`${API_BASE}/profile/restaurants`, { headers }),
-        ]);
-
-        // 🚀 Use .clone() so we can safely log error bodies without consuming the original stream
-        if (!fRes.ok)      console.error("Friends fetch error:",      await fRes.clone().json());
-        if (!rRes.ok)      console.error("Roommates fetch error:",    await rRes.clone().json());
-        if (!aRes.ok)      console.error("Accommodations fetch error:",await aRes.clone().json());
-        if (!restRes.ok)   console.error("Restaurants fetch error:",  await restRes.clone().json());
-
-        const [fData, rData, aData, restData] = await Promise.all([
-          fRes.json(),
-          rRes.json(),
-          aRes.json(),
-          restRes.json(),
-        ]);
-
-        setFriends(fData || []);
-        setRoommates(rData || []);
-        setAccommodations(aData || []);
-        setRestaurants(restData || []);
-      } catch (err) {
-        toast.error("Failed to load favorites");
-        console.error("Fetch error:", err);
+      // ✅ Use Firebase Auth to get a fresh token
+      const token = await auth.currentUser?.getIdToken(true);
+      if (!token) {
+        toast.error("Authentication token not found. Please log in again.");
+        return;
       }
-    };
 
-    fetchFavorites();
-  }, [isAuthenticated]);  // ✅ Fixed dependency array
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // ✅ Fetch all data in parallel
+      const [fRes, rRes, aRes, restRes] = await Promise.all([
+        fetch(`${API_BASE}/profile/friends`, { headers }),
+        fetch(`${API_BASE}/profile/roommates`, { headers }),
+        fetch(`${API_BASE}/profile/accommodations`, { headers }),
+        fetch(`${API_BASE}/profile/restaurants`, { headers }),
+      ]);
+
+      // ✅ Check for failed requests and log errors
+      if (!fRes.ok) console.error("Friends fetch error:", await fRes.clone().json());
+      if (!rRes.ok) console.error("Roommates fetch error:", await rRes.clone().json());
+      if (!aRes.ok) console.error("Accommodations fetch error:", await aRes.clone().json());
+      if (!restRes.ok) console.error("Restaurants fetch error:", await restRes.clone().json());
+
+      // ✅ Parse JSON safely
+      const [fData, rData, aData, restData] = await Promise.all([
+        fRes.json(),
+        rRes.json(),
+        aRes.json(),
+        restRes.json(),
+      ]);
+
+      // ✅ Ensure you always set arrays to avoid map errors
+      setFriends(Array.isArray(fData) ? fData : []);
+      setRoommates(Array.isArray(rData) ? rData : []);
+      setAccommodations(Array.isArray(aData) ? aData : []);
+      setRestaurants(Array.isArray(restData) ? restData : []);
+
+    } catch (err) {
+      toast.error("Failed to load favorites");
+      console.error("Fetch error:", err);
+    }
+  };
+
+  fetchFavorites();
+}, [isAuthenticated]);
+
 
   const renderCard = (item: any, type: string) => (
     <Card key={item._id} className="overflow-hidden">
