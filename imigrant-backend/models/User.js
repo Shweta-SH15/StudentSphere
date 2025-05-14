@@ -23,6 +23,7 @@ const UserSchema = new mongoose.Schema({
     priceRange: String,
     cuisinePreference: [String],
 
+    
     likedFriends: [{ type: String, ref: 'User' }],
     likedRoommates: [{ type: String, ref: 'User' }],
     likedAccommodations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accommodation' }],

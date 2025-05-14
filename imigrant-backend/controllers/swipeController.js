@@ -7,7 +7,7 @@ exports.likeFriend = async (req, res) => {
   try {
     const { friendId } = req.body;
     await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.uid,
       { $addToSet: { likedFriends: friendId } },
       { new: true }
     );
@@ -16,13 +16,26 @@ exports.likeFriend = async (req, res) => {
     res.status(500).json({ error: 'Failed to like friend' });
   }
 };
+exports.unlikeFriend = async (req, res) => {
+  try {
+    const { friendId } = req.body;
+    await User.findByIdAndUpdate(
+      req.user.uid,
+      { $pull: { likedFriends: friendId } },
+      { new: true }
+    );
+    res.json({ message: 'Friend unliked!' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unlike friend' });
+  }
+};
 
 // 🧑‍🤝‍🧑 Like Roommate
 exports.likeRoommate = async (req, res) => {
   try {
     const { roommateId } = req.body;
     await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.uid,
       { $addToSet: { likedRoommates: roommateId } },
       { new: true }
     );
@@ -37,7 +50,7 @@ exports.likeAccommodation = async (req, res) => {
   try {
     const { accommodationId } = req.body;
     await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.uid,
       { $addToSet: { likedAccommodations: accommodationId } },
       { new: true }
     );
@@ -52,7 +65,7 @@ exports.likeRestaurant = async (req, res) => {
   try {
     const { restaurantId } = req.body;
     await User.findByIdAndUpdate(
-      req.user.id,
+      req.user.uid,
       { $addToSet: { likedRestaurants: restaurantId } },
       { new: true }
     );
@@ -64,7 +77,7 @@ exports.likeRestaurant = async (req, res) => {
 
 exports.getLikedFriends = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('likedFriends');
+    const user = await User.findById(req.user.uid).populate('likedFriends');
     res.json(user.likedFriends);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked friends' });
@@ -73,7 +86,7 @@ exports.getLikedFriends = async (req, res) => {
 
 exports.getLikedRoommates = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('likedRoommates');
+    const user = await User.findById(req.user.uid).populate('likedRoommates');
     res.json(user.likedRoommates);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked roommates' });
@@ -82,7 +95,7 @@ exports.getLikedRoommates = async (req, res) => {
 
 exports.getLikedAccommodations = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('likedAccommodations');
+    const user = await User.findById(req.user.uid).populate('likedAccommodations');
     res.json(user.likedAccommodations);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked accommodations' });
@@ -91,7 +104,7 @@ exports.getLikedAccommodations = async (req, res) => {
 
 exports.getLikedRestaurants = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('likedRestaurants');
+    const user = await User.findById(req.user.uid).populate('likedRestaurants');
     res.json(user.likedRestaurants);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked restaurants' });

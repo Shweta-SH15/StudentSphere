@@ -61,22 +61,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Re-fetch profile whenever Firebase auth state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth as FirebaseAuth, async (fbUser: FirebaseUser | null) => {
-      if (fbUser) {
-        try {
-          const token = await getIdToken(fbUser, true);
-          const profile = await fetchProfile(token);
-          setUser(profile);
-        } catch (err: any) {
-          console.error("Error loading profile:", err);
-          toast.error(err.message || "Could not load your profile");
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+      const unsubscribe = onAuthStateChanged(auth as FirebaseAuth, async (fbUser: FirebaseUser | null) => {
+  if (fbUser) {
+    try {
+      const token = await getIdToken(fbUser, true);
+      localStorage.setItem("immigrantConnect_token", token); // ✅ ADD THIS
+      const profile = await fetchProfile(token);
+      setUser(profile);
+    } catch (err: any) {
+      console.error("Error loading profile:", err);
+      toast.error(err.message || "Could not load your profile");
+      setUser(null);
+    }
+  } else {
+    localStorage.removeItem("immigrantConnect_token"); // ✅ REMOVE token on logout
+    setUser(null);
+  }
+  setLoading(false);
+});
     return () => unsubscribe();
   }, []);
 
@@ -84,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     const cred = await signInWithEmailAndPassword(auth, email, password);
     const token = await getIdToken(cred.user, true);
+    localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
     setUser(profile);
     toast.success("Logged in successfully!");
@@ -95,6 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Use the modular updateProfile helper
     await updateProfile(cred.user, { displayName: name });
     const token = await getIdToken(cred.user, true);
+    localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
     setUser(profile);
     toast.success("Account created successfully!");
@@ -112,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const token = await getIdToken(result.user, true);
+    localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
     setUser(profile);
     toast.success("Logged in with Google!");
@@ -122,6 +127,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const provider = new FacebookAuthProvider();
     const result = await signInWithPopup(auth, provider);
     const token = await getIdToken(result.user, true);
+    localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
     setUser(profile);
     toast.success("Logged in with Facebook!");

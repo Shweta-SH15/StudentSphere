@@ -7,22 +7,28 @@ const {
   getLikedFriends,
   getLikedRoommates,
   getLikedAccommodations,
-  getLikedRestaurants
+  getLikedRestaurants,
+  unlikeFriend
 } = require('../controllers/swipeController');
-// const { protect } = require('../middleware/authMiddleware');
+const verifyFirebaseToken = require('../middleware/verifyFirebaseToken');
 
 const router = express.Router();
 
+// 🔒 Require Firebase login for all swipe routes
+router.use(verifyFirebaseToken);
+
 // Like routes (POST)
-router.post('/friend',  likeFriend);
-router.post('/roommate',  likeRoommate);
-router.post('/accommodation',  likeAccommodation);
-router.post('/restaurant',  likeRestaurant);
+router.post('/friend', likeFriend);
+router.post('/roommate', likeRoommate);
+router.post('/accommodation', likeAccommodation);
+router.post('/restaurant', likeRestaurant);
 
 // Get liked items (GET)
 router.get('/friends', getLikedFriends);
-router.get('/roommates',  getLikedRoommates);
-router.get('/accommodations',  getLikedAccommodations);
-router.get('/restaurants',  getLikedRestaurants);
+router.get('/roommates', getLikedRoommates);
+router.get('/accommodations', getLikedAccommodations);
+router.get('/restaurants', getLikedRestaurants);
 
+//Get disliked Items
+router.post('/unlike-friend', unlikeFriend); 
 module.exports = router;
