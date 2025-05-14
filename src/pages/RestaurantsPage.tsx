@@ -18,6 +18,73 @@ const RestaurantsPage = () => {
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   const [activeTab, setActiveTab] = useState("browse");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
+const mockRestaurants = [
+  {
+    _id: "mock-r1",
+    name: "Bella Italia",
+    cuisine: "Italian",
+    priceRange: "$$",
+    rating: 4.5,
+    address: "123 College St, Downtown",
+    phone: "555-123-4567",
+    website: "www.bellaitalia.com",
+    openHours: "11:00 AM - 10:00 PM",
+    popularDishes: ["Margherita Pizza", "Lasagna", "Tiramisu"],
+    image: "/uploads/sample1.jpg",
+  },
+  {
+    _id: "mock-r2",
+    name: "Spice of India",
+    cuisine: "Indian",
+    priceRange: "$$",
+    rating: 4.3,
+    address: "456 University Ave, Midtown",
+    phone: "555-234-5678",
+    website: "www.spiceofindia.com",
+    openHours: "12:00 PM - 11:00 PM",
+    popularDishes: ["Butter Chicken", "Naan", "Biryani"],
+    image: "/uploads/sample2.jpg",
+  },
+  {
+    _id: "mock-r3",
+    name: "El Mariachi",
+    cuisine: "Mexican",
+    priceRange: "$",
+    rating: 4.6,
+    address: "789 Main St, Downtown",
+    phone: "555-345-6789",
+    website: "www.elmariachi.com",
+    openHours: "11:30 AM - 9:30 PM",
+    popularDishes: ["Tacos al Pastor", "Guacamole", "Churros"],
+    image: "/uploads/sample3.jpg",
+  },
+  {
+    _id: "mock-r4",
+    name: "Sushi Paradise",
+    cuisine: "Japanese",
+    priceRange: "$$$",
+    rating: 4.8,
+    address: "101 Queen St, Financial District",
+    phone: "555-456-7890",
+    website: "www.sushiparadise.com",
+    openHours: "5:00 PM - 11:00 PM",
+    popularDishes: ["Dragon Roll", "Sashimi Platter", "Miso Soup"],
+    image: "/uploads/sample4.jpg",
+  },
+  {
+    _id: "mock-r5",
+    name: "Golden Dragon",
+    cuisine: "Chinese",
+    priceRange: "$$",
+    rating: 4.2,
+    address: "222 Chinatown St, East Side",
+    phone: "555-567-8901",
+    website: "www.goldendragon.com",
+    openHours: "11:00 AM - 12:00 AM",
+    popularDishes: ["Kung Pao Chicken", "Dim Sum", "Peking Duck"],
+    image: "/uploads/sample5.jpg",
+  },
+];
 
   const filterOptions = [
     {
@@ -46,20 +113,26 @@ const RestaurantsPage = () => {
     const token = localStorage.getItem('immigrantConnect_token');
 
     const fetchRestaurants = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/restaurants`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setAllRestaurants(data);
-        setFilteredRestaurants(data);
-      } catch (err) {
-        toast.error('Failed to load restaurants');
-        console.error(err);
-      }
-    };
+  try {
+    const res = await fetch(`${API_BASE}/restaurants`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+
+    const fallback = Array.isArray(data) && data.length > 0 ? data : mockRestaurants;
+
+    setAllRestaurants(fallback);
+    setFilteredRestaurants(fallback);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load restaurants. Showing mock data.");
+    setAllRestaurants(mockRestaurants);
+    setFilteredRestaurants(mockRestaurants);
+  }
+};
+
 
     const fetchFavorites = async () => {
       try {

@@ -33,6 +33,73 @@ const RoommatesPage = () => {
   const [filteredRoommates, setFilteredRoommates] = useState<Roommate[]>([]);  
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
+const mockRoommates: Roommate[] = [
+  {
+    _id: "mock-r1",
+    name: "Alex Chen",
+    age: 22,
+    gender: "Male",
+    occupation: "Student",
+    budget: "$900",
+    moveInDate: "2024-09-01",
+    bio: "CS student who enjoys calm nights and clean shared spaces.",
+    profileImage: "/uploads/sample1.jpg",
+    lifestyle: ["Non-smoker", "Early Riser", "Clean"],
+    interests: ["Basketball", "Gaming", "Coding"],
+  },
+  {
+    _id: "mock-r2",
+    name: "Laura García",
+    age: 21,
+    gender: "Female",
+    occupation: "Student",
+    budget: "$850",
+    moveInDate: "2024-08-15",
+    bio: "Love music, cooking, and traveling. Looking for a chill roommate.",
+    profileImage: "/uploads/sample2.jpg",
+    lifestyle: ["Pet Lover", "Clean"],
+    interests: ["Music", "Cooking", "Travel"],
+  },
+  {
+    _id: "mock-r3",
+    name: "Raj Patel",
+    age: 24,
+    gender: "Male",
+    occupation: "Graduate Student",
+    budget: "$1000",
+    moveInDate: "2024-07-01",
+    bio: "Quiet and respectful. Prefer tidy shared spaces.",
+    profileImage: "/uploads/sample3.jpg",
+    lifestyle: ["Non-smoker", "Night Owl"],
+    interests: ["Cricket", "Finance", "Movies"],
+  },
+  {
+    _id: "mock-r4",
+    name: "Fatima Zahra",
+    age: 23,
+    gender: "Female",
+    occupation: "Working Professional",
+    budget: "$950",
+    moveInDate: "2024-10-01",
+    bio: "Professional looking for a responsible roommate.",
+    profileImage: "/uploads/sample4.jpg",
+    lifestyle: ["Early Riser", "Non-smoker", "Clean"],
+    interests: ["Reading", "Yoga", "Volunteering"],
+  },
+  {
+    _id: "mock-r5",
+    name: "Noah Smith",
+    age: 25,
+    gender: "Male",
+    occupation: "Intern",
+    budget: "$800",
+    moveInDate: "2024-06-15",
+    bio: "Intern at a startup, love quiet evenings and coffee.",
+    profileImage: "/uploads/sample5.jpg",
+    lifestyle: ["Clean", "Night Owl"],
+    interests: ["Startups", "Gaming", "Skiing"],
+  },
+];
 
   const filterOptions = [
     {
@@ -61,20 +128,26 @@ const RoommatesPage = () => {
     const token = localStorage.getItem("immigrantConnect_token");
 
     const fetchRoommates = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/profile/roommate-suggestions`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setAllRoommates(data);
-        setFilteredRoommates(data);
-      } catch (err) {
-        toast.error("Failed to load roommates.");
-        console.error(err);
-      }
-    };
+  try {
+    const res = await fetch(`${API_BASE}/profile/roommate-suggestions`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await res.json();
+
+    const fallback = Array.isArray(data) && data.length > 0 ? data : mockRoommates;
+
+    setAllRoommates(fallback);
+    setFilteredRoommates(fallback);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load roommates. Showing mock data.");
+    setAllRoommates(mockRoommates);
+    setFilteredRoommates(mockRoommates);
+  }
+};
+
 
     const fetchLikedRoommates = async () => {
       try {

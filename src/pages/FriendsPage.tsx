@@ -23,6 +23,121 @@ const FriendsPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
   const navigate = useNavigate();
 
+  const mockFriends = [
+  {
+    _id: "mock-f1",
+    name: "Alex Chen",
+    age: 22,
+    nationality: "China",
+    university: "University of Toronto",
+    interest: ["Photography", "Basketball", "Coding"],
+    language: ["Mandarin", "English"],
+    bio: "Computer Science student looking to make international friends and practice my English.",
+    profileImage: "/uploads/sample1.jpg",
+  },
+  {
+    _id: "mock-f2",
+    name: "Laura García",
+    age: 20,
+    nationality: "Spain",
+    university: "McGill University",
+    interest: ["Music", "Hiking", "Politics"],
+    language: ["Spanish", "English", "French"],
+    bio: "International Relations student who loves exploring the city and going to live music events.",
+    profileImage: "/uploads/sample2.jpg",
+  },
+  {
+    _id: "mock-f3",
+    name: "Raj Patel",
+    age: 24,
+    nationality: "India",
+    university: "University of British Columbia",
+    interest: ["Cricket", "Cooking", "Startups"],
+    language: ["Hindi", "English"],
+    bio: "MBA student with a passion for entrepreneurship and connecting people.",
+    profileImage: "/uploads/sample3.jpg",
+  },
+  {
+    _id: "mock-f4",
+    name: "Emma Wilson",
+    age: 21,
+    nationality: "Australia",
+    university: "Queen's University",
+    interest: ["Swimming", "Travel", "Art"],
+    language: ["English"],
+    bio: "Fine Arts student looking for friends to explore galleries and museums with.",
+    profileImage: "/uploads/sample4.jpg",
+  },
+  {
+    _id: "mock-f5",
+    name: "Omar Hassan",
+    age: 23,
+    nationality: "Egypt",
+    university: "York University",
+    interest: ["Soccer", "History", "Film"],
+    language: ["Arabic", "English"],
+    bio: "Film studies major hoping to find friends with similar interests in cinema and culture.",
+    profileImage: "/uploads/sample5.jpg",
+  },
+    {
+    _id: "mock-f6",
+    name: "Anna Müller",
+    age: 25,
+    nationality: "Germany",
+    university: "University of Waterloo",
+    interest: ["Reading", "Philosophy", "Languages"],
+    language: ["German", "English"],
+    bio: "Linguistics student who loves learning about cultures and connecting through languages.",
+    profileImage: "/uploads/sample6.jpg",
+  },
+  {
+    _id: "mock-f7",
+    name: "Carlos Silva",
+    age: 22,
+    nationality: "Brazil",
+    university: "Concordia University",
+    interest: ["Dance", "Volunteering", "Technology"],
+    language: ["Portuguese", "English"],
+    bio: "Tech enthusiast and dancer, always ready to meet new people and share stories.",
+    profileImage: "/uploads/sample7.jpg",
+  },
+  {
+    _id: "mock-f8",
+    name: "Yuki Tanaka",
+    age: 21,
+    nationality: "Japan",
+    university: "Simon Fraser University",
+    interest: ["Anime", "Gaming", "Robotics"],
+    language: ["Japanese", "English"],
+    bio: "Robotics student into gaming and Japanese pop culture. Let's connect!",
+    profileImage: "/uploads/sample8.jpg",
+  },
+  {
+    _id: "mock-f9",
+    name: "Fatima Zahra",
+    age: 23,
+    nationality: "Morocco",
+    university: "University of Ottawa",
+    interest: ["Cooking", "Poetry", "Travel"],
+    language: ["Arabic", "French", "English"],
+    bio: "A dreamer and traveler with a taste for spicy food and soulful poetry.",
+    profileImage: "/uploads/sample9.jpg",
+  },
+  {
+    _id: "mock-f10",
+    name: "Noah Smith",
+    age: 24,
+    nationality: "Canada",
+    university: "University of Alberta",
+    interest: ["Skiing", "Startups", "Fitness"],
+    language: ["English", "French"],
+    bio: "Startup founder who enjoys cold weather, strong coffee, and meaningful conversations.",
+    profileImage: "/uploads/sample10.jpg",
+  }
+
+];
+
+
   const filterOptions = [
     {
       id: "nationality",
@@ -48,20 +163,26 @@ const FriendsPage = () => {
     }
 
     const fetchFriends = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/profile/friend-suggestions`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        setAllFriends(data); // store all for filtering
-        setFilteredFriends(data); // show initially
-      } catch (err) {
-        console.error(err);
-        toast.error('Failed to load friends');
+  try {
+    const response = await fetch(`${API_BASE}/profile/friend-suggestions`, {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    };
+    });
+    const data = await response.json();
+
+    const fallback = Array.isArray(data) && data.length > 0 ? data : mockFriends;
+
+    setAllFriends(fallback);
+    setFilteredFriends(fallback);
+  } catch (err) {
+    console.error(err);
+    toast.error('Failed to load friends. Using mock data.');
+    setAllFriends(mockFriends);
+    setFilteredFriends(mockFriends);
+  }
+};
+
     
     const fetchLiked = async () => {
       try {
