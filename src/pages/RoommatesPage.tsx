@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
 import { API_BASE, SOCKET_URL } from "@/lib/api";
+import { getAuth, getIdToken } from "firebase/auth";
 
 type Roommate = {
   _id: string;
@@ -106,21 +107,59 @@ const RoommatesPage = () => {
       return;
     }
 
-    const localLiked = localStorage.getItem("likedRoommates");
-    const likedFromStorage = localLiked ? JSON.parse(localLiked) : [];
-    setLikedRoommates(likedFromStorage);
-    setAllRoommates(mockRoommates);
-    setFilteredRoommates(mockRoommates);
+    const fetchData = async () => {
+      try {
+        const token = await getIdToken(getAuth().currentUser!, true);
+
+        const [resSuggestions, resLiked] = await Promise.all([
+          fetch(`${API_BASE}/profile/roommate-suggestions`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_BASE}/profile/roommates`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+
+        const suggestions = await resSuggestions.json();
+        const liked = await resLiked.json();
+
+        setAllRoommates(Array.isArray(suggestions) && suggestions.length ? suggestions : mockRoommates);
+        setFilteredRoommates(Array.isArray(suggestions) && suggestions.length ? suggestions : mockRoommates);
+        setLikedRoommates(Array.isArray(liked) ? liked : []);
+      } catch (err) {
+        console.error(err);
+        setAllRoommates(mockRoommates);
+        setFilteredRoommates(mockRoommates);
+      }
+    };
+
+    fetchData();
   }, [isAuthenticated]);
 
-  const handleLike = (id: string) => {
+  const handleLike = async (id: string) => {
     const liked = filteredRoommates.find(item => item._id === id);
     if (!liked || likedRoommates.some(r => r._id === id)) return;
 
-    const updated = [...likedRoommates, liked];
-    setLikedRoommates(updated);
-    localStorage.setItem("likedRoommates", JSON.stringify(updated));
-    toast.success(`You liked ${liked.name}`);
+    try {
+      const token = await getIdToken(getAuth().currentUser!, true);
+
+      const res = await fetch(`${API_BASE}/swipe/roommate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ roommateId: liked._id })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not save roommate");
+
+      const updated = [...likedRoommates, liked];
+      setLikedRoommates(updated);
+      localStorage.setItem("likedRoommates", JSON.stringify(updated));
+      toast.success(`You liked ${liked.name}`);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to like roommate");
+    }
+
     setCurrentIndex((i) => (i + 1) % filteredRoommates.length);
   };
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
 import { API_BASE, SOCKET_URL } from "@/lib/api";
+import { getAuth, getIdToken } from "firebase/auth";
+
+
 const mockAccommodations = [
   {
     _id: "mock-a1",
@@ -155,8 +157,6 @@ const mockAccommodations = [
   }
 ];
 
-const LOCAL_STORAGE_KEY = "likedMockAccommodations";
-
 const AccommodationPage = () => {
   const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -178,7 +178,7 @@ const AccommodationPage = () => {
       return;
     }
 
-    const token = localStorage.getItem('immigrantConnect_token');
+    const token = localStorage.getItem("immigrantConnect_token");
 
     const fetchAccommodations = async () => {
       try {
@@ -186,7 +186,7 @@ const AccommodationPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        const fallback = data?.length ? data : mockAccommodations;
+        const fallback = Array.isArray(data) && data.length ? data : mockAccommodations;
         setAllAccommodations(fallback);
         setFilteredAccommodations(fallback);
       } catch {
@@ -195,27 +195,23 @@ const AccommodationPage = () => {
       }
     };
 
-    const loadLiked = () => {
-      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          setLikedAccommodations(parsed);
-        } catch {
-          localStorage.removeItem(LOCAL_STORAGE_KEY);
-        }
+    const fetchLiked = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/profile/accommodations`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setLikedAccommodations(Array.isArray(data) ? data : []);
+      } catch {
+        setLikedAccommodations([]);
       }
     };
 
     fetchAccommodations();
-    loadLiked();
+    fetchLiked();
   }, [isAuthenticated]);
 
-  const saveToLocalStorage = (data: any[]) => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-  };
-
-  const handleFilterChange = (filterId: string, value: string) => {
+  const handleFilterChange = (filterId, value) => {
     let filtered = allAccommodations;
 
     if (filterId === "type") {
@@ -229,6 +225,7 @@ const AccommodationPage = () => {
         if (value === "$800-$1000") return price >= 800 && price <= 1000;
         if (value === "$1000-$1200") return price > 1000 && price <= 1200;
         if (value === "Above $1200") return price > 1200;
+        return true;
       });
     }
 
@@ -236,44 +233,70 @@ const AccommodationPage = () => {
     setCurrentIndex(0);
   };
 
-  const handleLike = (id: string) => {
-    const liked = filteredAccommodations.find(item => item._id === id);
-    if (!liked || likedAccommodations.some(item => item._id === id)) return;
+  const handleLike = async (id) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const token = await getIdToken(user, true);
 
-    const updated = [...likedAccommodations, liked];
-    setLikedAccommodations(updated);
-    saveToLocalStorage(updated);
-    toast("Saved!", { description: `${liked.title} added to your favorites.` });
+    const accommodation = filteredAccommodations.find(item => item._id === id);
+    if (!accommodation || likedAccommodations.some(item => item._id === id)) return;
 
-    setCurrentIndex((i) => (i + 1) % filteredAccommodations.length);
-  };
+    try {
+      await fetch(`${API_BASE}/swipe/accommodation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ accommodationId: id })
+      });
 
-  const handleUnlike = (id: string) => {
-    const updated = likedAccommodations.filter(item => item._id !== id);
-    setLikedAccommodations(updated);
-    saveToLocalStorage(updated);
-    toast("Removed!", { description: "Accommodation removed from favorites." });
+      const updated = [...likedAccommodations, accommodation];
+      setLikedAccommodations(updated);
+      toast("Saved!", { description: `${accommodation.title} added to favorites.` });
+    } catch (err) {
+      toast.error("Failed to save.");
+    }
+
+    setCurrentIndex(i => (i + 1) % filteredAccommodations.length);
   };
 
   const handleDislike = () => {
-    setCurrentIndex((i) => (i + 1) % filteredAccommodations.length);
+    setCurrentIndex(i => (i + 1) % filteredAccommodations.length);
   };
 
-  const handleContactClick = (contact: string) => {
-    navigator.clipboard.writeText(contact)
-      .then(() => toast("Copied!", { description: `Contact: ${contact}` }))
-      .catch(() => toast.error("Failed to copy contact"));
+  const handleUnlike = async (id) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const token = await getIdToken(user, true);
+
+    try {
+      await fetch(`${API_BASE}/swipe/unlike-accommodation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ accommodationId: id })
+      });
+
+      const updated = likedAccommodations.filter(item => item._id !== id);
+      setLikedAccommodations(updated);
+      toast("Removed!", { description: "Removed from favorites." });
+    } catch {
+      toast.error("Failed to remove.");
+    }
   };
 
   const current = filteredAccommodations[currentIndex];
 
   return (
-    <div className="min-h-screen bg-[#080c14] py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-100">Find Accommodation</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">Find Accommodation</h1>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#0f1628]">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="discover">Discover</TabsTrigger>
             <TabsTrigger value="saved">Saved ({likedAccommodations.length})</TabsTrigger>
           </TabsList>
@@ -288,7 +311,7 @@ const AccommodationPage = () => {
                 subtitle={`${current.location} • ${current.price}`}
                 details={
                   <div className="space-y-3">
-                    <p className="text-sm text-gray-300">{current.description}</p>
+                    <p className="text-sm text-gray-600">{current.description}</p>
                     <div className="flex flex-wrap gap-2">
                       <Badge variant="outline">{current.type}</Badge>
                       <Badge variant="outline">{current.bedrooms} Bed</Badge>
@@ -302,41 +325,45 @@ const AccommodationPage = () => {
                   </div>
                 }
                 onLike={() => handleLike(current._id)}
-                onDislike={() => handleDislike()}
+                onDislike={handleDislike}
               />
             ) : (
-              <div className="text-center py-12 text-gray-400">
-                No accommodations found.{" "}
-                <Button variant="link" onClick={() => setFilteredAccommodations(allAccommodations)}>Reset Filters</Button>
+              <div className="text-center py-12 text-gray-500">
+                No results.{" "}
+                <Button variant="link" onClick={() => setFilteredAccommodations(allAccommodations)}>
+                  Reset Filters
+                </Button>
               </div>
             )}
           </TabsContent>
 
           <TabsContent value="saved">
-            {likedAccommodations.length ? (
+            {likedAccommodations.length > 0 ? (
               likedAccommodations.map(item => (
-                <div key={item._id} className="bg-[#0f1628] border border-gray-800 p-4 rounded-lg mb-4">
-                  <div className="flex gap-4">
-                    <img src={`${SOCKET_URL}${item.image}`} alt={item.title} className="w-24 h-24 object-cover rounded" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white">{item.title}</h3>
-                      <p className="text-sm text-gray-400">{item.location} • {item.price}</p>
-                      <p className="text-xs text-gray-400 mt-1">Contact: {item.contact}</p>
-                      <div className="flex gap-2 mt-2">
-                        <Button size="sm" onClick={() => handleContactClick(item.contact)}>Contact Owner</Button>
-                        <Button size="sm" variant="outline" onClick={() => handleUnlike(item._id)}>Remove</Button>
-                      </div>
-                    </div>
+                <div key={item._id} className="bg-white shadow p-4 rounded mb-4 flex">
+                  <img src={`${SOCKET_URL}${item.image}`} className="w-24 h-24 rounded object-cover mr-4" />
+                  <div>
+                    <h3 className="font-semibold">{item.title}</h3>
+                    <p className="text-sm text-gray-600">{item.location} • {item.price}</p>
+                    <p className="text-sm text-gray-500">{item.contact}</p>
+                    <Button size="sm" className="mt-2 bg-red-500 text-white" onClick={() => handleUnlike(item._id)}>
+                      Remove
+                    </Button>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-400 py-12">No saved accommodations yet.</p>
+              <p className="text-center text-gray-500 py-12">No saved accommodations yet.</p>
             )}
           </TabsContent>
         </Tabs>
       </div>
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} defaultView="login" />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        defaultView="login"
+      />
     </div>
   );
 };

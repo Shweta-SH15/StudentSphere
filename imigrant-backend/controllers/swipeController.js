@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Accommodation = require('../models/Accommodation');
 const Restaurant = require('../models/Restaurant');
 
-// 👍 Like Friend
+// Like Friend
 exports.likeFriend = async (req, res) => {
   try {
     const { friendId } = req.body;
@@ -16,6 +16,7 @@ exports.likeFriend = async (req, res) => {
     res.status(500).json({ error: 'Failed to like friend' });
   }
 };
+
 exports.unlikeFriend = async (req, res) => {
   try {
     const { friendId } = req.body;
@@ -30,7 +31,6 @@ exports.unlikeFriend = async (req, res) => {
   }
 };
 
-// 🧑‍🤝‍🧑 Like Roommate
 exports.likeRoommate = async (req, res) => {
   try {
     const { roommateId } = req.body;
@@ -45,7 +45,6 @@ exports.likeRoommate = async (req, res) => {
   }
 };
 
-// 🏠 Like Accommodation
 exports.likeAccommodation = async (req, res) => {
   try {
     const { accommodationId } = req.body;
@@ -60,7 +59,6 @@ exports.likeAccommodation = async (req, res) => {
   }
 };
 
-// 🍽️ Like Restaurant
 exports.likeRestaurant = async (req, res) => {
   try {
     const { restaurantId } = req.body;
@@ -75,10 +73,11 @@ exports.likeRestaurant = async (req, res) => {
   }
 };
 
+// GET Favorites (used on FavoritesPage)
 exports.getLikedFriends = async (req, res) => {
   try {
     const user = await User.findById(req.user.uid).populate('likedFriends');
-    res.json(user.likedFriends);
+    res.json(user?.likedFriends || []);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked friends' });
   }
@@ -87,7 +86,7 @@ exports.getLikedFriends = async (req, res) => {
 exports.getLikedRoommates = async (req, res) => {
   try {
     const user = await User.findById(req.user.uid).populate('likedRoommates');
-    res.json(user.likedRoommates);
+    res.json(user?.likedRoommates || []);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked roommates' });
   }
@@ -96,7 +95,7 @@ exports.getLikedRoommates = async (req, res) => {
 exports.getLikedAccommodations = async (req, res) => {
   try {
     const user = await User.findById(req.user.uid).populate('likedAccommodations');
-    res.json(user.likedAccommodations);
+    res.json(user?.likedAccommodations || []);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked accommodations' });
   }
@@ -105,7 +104,7 @@ exports.getLikedAccommodations = async (req, res) => {
 exports.getLikedRestaurants = async (req, res) => {
   try {
     const user = await User.findById(req.user.uid).populate('likedRestaurants');
-    res.json(user.likedRestaurants);
+    res.json(user?.likedRestaurants || []);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch liked restaurants' });
   }

@@ -21,7 +21,7 @@ const FriendsPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
   const navigate = useNavigate();
 
-const mockFriends = [
+  const mockFriends = [
     {
       _id: "mock-f1",
       name: "Alex Chen",
@@ -77,7 +77,7 @@ const mockFriends = [
       bio: "Film studies major hoping to find friends with similar interests in cinema and culture.",
       profileImage: "/uploads/sample5.jpg",
     },
-  ];  
+  ];
 
   const filterOptions = [
     { id: "nationality", name: "Nationality", values: ["China", "Spain", "India", "Australia", "Egypt"] },
@@ -149,7 +149,7 @@ const mockFriends = [
     setCurrentIndex(0);
   };
 
-  const handleLike = async (id) => {
+  const handleLike = async (id: string) => {
     const friend = filteredFriends.find(f => f._id === id);
     if (!friend || likedFriends.find(f => f._id === id)) return;
 
@@ -157,25 +157,41 @@ const mockFriends = [
       const user = getAuth().currentUser;
       const token = await getIdToken(user, true);
 
-      await fetch(`${API_BASE}/swipe/friend`, {
+      // ✅ Send like to backend
+      const res = await fetch(`${API_BASE}/swipe/friend`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ friendId: friend._id })
+        body: JSON.stringify({ friendId: id })
       });
 
-      const updated = [...likedFriends, friend];
-      saveLikedToStorage(updated);
-      toast.success(`You liked ${friend.name}`);
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to like friend");
+      }
+
+      // ✅ Immediately fetch updated liked friends from backend
+      const likedRes = await fetch(`${API_BASE}/profile/friends`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const likedData = await likedRes.json();
+      setLikedFriends(Array.isArray(likedData) ? likedData : []);
+
+      toast("Friend Liked!", { description: `You liked ${friend.name}` });
     } catch (err) {
       console.error(err);
-      toast.error("Like failed.");
+      toast.error("Could not like friend.");
     }
 
     setCurrentIndex(prev => (prev + 1) % filteredFriends.length);
   };
+
+
 
   const handleUnlike = async (id) => {
     const updated = likedFriends.filter(f => f._id !== id);
