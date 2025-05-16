@@ -187,8 +187,8 @@ const RoommatesPage = () => {
     } else if (filterId === "age") {
       filtered = allRoommates.filter(r =>
         value === "18-21" ? r.age <= 21 :
-        value === "22-25" ? r.age >= 22 && r.age <= 25 :
-        r.age >= 26
+          value === "22-25" ? r.age >= 22 && r.age <= 25 :
+            r.age >= 26
       );
     } else if (filterId === "lifestyle") {
       filtered = allRoommates.filter(r => r.lifestyle?.includes(value));
@@ -200,13 +200,13 @@ const RoommatesPage = () => {
   const currentRoommate = filteredRoommates[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Find Roommates</h1>
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">Find Roommates</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="discover">Discover</TabsTrigger>
-            <TabsTrigger value="liked">Liked ({likedRoommates.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#121826] text-white">
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="discover">Discover</TabsTrigger>
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="liked">Liked ({likedRoommates.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="discover">
@@ -238,22 +238,39 @@ const RoommatesPage = () => {
 
           <TabsContent value="liked">
             {likedRoommates.length > 0 ? (
-              likedRoommates.map(roommate => (
-                <div key={roommate._id} className="bg-white p-4 rounded-lg shadow-md mb-4 flex">
-                  <img src={`${SOCKET_URL}${roommate.profileImage}`} className="w-16 h-16 rounded-full mr-4 object-cover" />
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{roommate.name}</h3>
-                    <p className="text-sm text-gray-500">{roommate.age} • {roommate.gender}</p>
-                    <Button size="sm" className="mt-2 bg-red-500 text-white" onClick={() => handleUnlike(roommate._id)}>
-                      Remove
-                    </Button>
+              <div className="grid grid-cols-1 gap-4">
+                {likedRoommates.map((roommate) => (
+                  <div
+                    key={roommate._id}
+                    className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex"
+                  >
+                    <img
+                      src={`${SOCKET_URL}${roommate.profileImage || "/uploads/default.png"}`}
+                      alt={roommate.name}
+                      className="w-16 h-16 rounded-full mr-4 object-cover"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{roommate.name}</h3>
+                      <p className="text-sm text-gray-400">
+                        {roommate.age} • {roommate.gender}
+                      </p>
+                      <p className="text-sm text-gray-500">{roommate.occupation}</p>
+                      <Button
+                        size="sm"
+                        className="mt-2 bg-red-600 hover:bg-red-700 text-white"
+                        onClick={() => handleUnlike(roommate._id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <p className="text-center py-12 text-gray-500">No liked roommates yet.</p>
             )}
           </TabsContent>
+
         </Tabs>
       </div>
 

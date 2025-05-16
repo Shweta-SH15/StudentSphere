@@ -291,14 +291,13 @@ const AccommodationPage = () => {
   const current = filteredAccommodations[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Find Accommodation</h1>
-
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">Find Accommodation</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="discover">Discover</TabsTrigger>
-            <TabsTrigger value="saved">Saved ({likedAccommodations.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#121826] text-white">
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="discover">Discover</TabsTrigger>
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="saved">Saved ({likedAccommodations.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="discover">
@@ -339,23 +338,41 @@ const AccommodationPage = () => {
 
           <TabsContent value="saved">
             {likedAccommodations.length > 0 ? (
-              likedAccommodations.map(item => (
-                <div key={item._id} className="bg-white shadow p-4 rounded mb-4 flex">
-                  <img src={`${SOCKET_URL}${item.image}`} className="w-24 h-24 rounded object-cover mr-4" />
-                  <div>
-                    <h3 className="font-semibold">{item.title}</h3>
-                    <p className="text-sm text-gray-600">{item.location} • {item.price}</p>
-                    <p className="text-sm text-gray-500">{item.contact}</p>
-                    <Button size="sm" className="mt-2 bg-red-500 text-white" onClick={() => handleUnlike(item._id)}>
-                      Remove
-                    </Button>
+              <div className="grid grid-cols-1 gap-4">
+                {likedAccommodations.map((item) => (
+                  <div
+                    key={item._id}
+                    className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex"
+                  >
+                    <img
+                      src={`${SOCKET_URL}${item.image}`}
+                      alt={item.title}
+                      className="w-24 h-24 rounded object-cover mr-4"
+                    />
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold">{item.title}</h3>
+                      <p className="text-sm text-gray-400">
+                        {item.location} • {item.price}
+                      </p>
+                      <p className="text-sm text-gray-500">{item.contact}</p>
+                      <Button
+                        size="sm"
+                        className="mt-2 bg-red-600 hover:bg-red-700 text-white"
+                        onClick={() => handleUnlike(item._id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
-              <p className="text-center text-gray-500 py-12">No saved accommodations yet.</p>
+              <p className="text-center text-gray-500 py-12">
+                No saved accommodations yet.
+              </p>
             )}
           </TabsContent>
+
         </Tabs>
       </div>
 

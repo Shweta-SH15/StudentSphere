@@ -20,72 +20,72 @@ const RestaurantsPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
 
   const mockRestaurants = [
-  {
-    _id: "mock-r1",
-    name: "Bella Italia",
-    cuisine: "Italian",
-    priceRange: "$$",
-    rating: 4.5,
-    address: "123 College St, Downtown",
-    phone: "555-123-4567",
-    website: "www.bellaitalia.com",
-    openHours: "11:00 AM - 10:00 PM",
-    popularDishes: ["Margherita Pizza", "Lasagna", "Tiramisu"],
-    image: "/uploads/sample1.jpg",
-  },
-  {
-    _id: "mock-r2",
-    name: "Spice of India",
-    cuisine: "Indian",
-    priceRange: "$$",
-    rating: 4.3,
-    address: "456 University Ave, Midtown",
-    phone: "555-234-5678",
-    website: "www.spiceofindia.com",
-    openHours: "12:00 PM - 11:00 PM",
-    popularDishes: ["Butter Chicken", "Naan", "Biryani"],
-    image: "/uploads/sample2.jpg",
-  },
-  {
-    _id: "mock-r3",
-    name: "El Mariachi",
-    cuisine: "Mexican",
-    priceRange: "$",
-    rating: 4.6,
-    address: "789 Main St, Downtown",
-    phone: "555-345-6789",
-    website: "www.elmariachi.com",
-    openHours: "11:30 AM - 9:30 PM",
-    popularDishes: ["Tacos al Pastor", "Guacamole", "Churros"],
-    image: "/uploads/sample3.jpg",
-  },
-  {
-    _id: "mock-r4",
-    name: "Sushi Paradise",
-    cuisine: "Japanese",
-    priceRange: "$$$",
-    rating: 4.8,
-    address: "101 Queen St, Financial District",
-    phone: "555-456-7890",
-    website: "www.sushiparadise.com",
-    openHours: "5:00 PM - 11:00 PM",
-    popularDishes: ["Dragon Roll", "Sashimi Platter", "Miso Soup"],
-    image: "/uploads/sample4.jpg",
-  },
-  {
-    _id: "mock-r5",
-    name: "Golden Dragon",
-    cuisine: "Chinese",
-    priceRange: "$$",
-    rating: 4.2,
-    address: "222 Chinatown St, East Side",
-    phone: "555-567-8901",
-    website: "www.goldendragon.com",
-    openHours: "11:00 AM - 12:00 AM",
-    popularDishes: ["Kung Pao Chicken", "Dim Sum", "Peking Duck"],
-    image: "/uploads/sample5.jpg",
-  },
-];
+    {
+      _id: "mock-r1",
+      name: "Bella Italia",
+      cuisine: "Italian",
+      priceRange: "$$",
+      rating: 4.5,
+      address: "123 College St, Downtown",
+      phone: "555-123-4567",
+      website: "www.bellaitalia.com",
+      openHours: "11:00 AM - 10:00 PM",
+      popularDishes: ["Margherita Pizza", "Lasagna", "Tiramisu"],
+      image: "/uploads/sample1.jpg",
+    },
+    {
+      _id: "mock-r2",
+      name: "Spice of India",
+      cuisine: "Indian",
+      priceRange: "$$",
+      rating: 4.3,
+      address: "456 University Ave, Midtown",
+      phone: "555-234-5678",
+      website: "www.spiceofindia.com",
+      openHours: "12:00 PM - 11:00 PM",
+      popularDishes: ["Butter Chicken", "Naan", "Biryani"],
+      image: "/uploads/sample2.jpg",
+    },
+    {
+      _id: "mock-r3",
+      name: "El Mariachi",
+      cuisine: "Mexican",
+      priceRange: "$",
+      rating: 4.6,
+      address: "789 Main St, Downtown",
+      phone: "555-345-6789",
+      website: "www.elmariachi.com",
+      openHours: "11:30 AM - 9:30 PM",
+      popularDishes: ["Tacos al Pastor", "Guacamole", "Churros"],
+      image: "/uploads/sample3.jpg",
+    },
+    {
+      _id: "mock-r4",
+      name: "Sushi Paradise",
+      cuisine: "Japanese",
+      priceRange: "$$$",
+      rating: 4.8,
+      address: "101 Queen St, Financial District",
+      phone: "555-456-7890",
+      website: "www.sushiparadise.com",
+      openHours: "5:00 PM - 11:00 PM",
+      popularDishes: ["Dragon Roll", "Sashimi Platter", "Miso Soup"],
+      image: "/uploads/sample4.jpg",
+    },
+    {
+      _id: "mock-r5",
+      name: "Golden Dragon",
+      cuisine: "Chinese",
+      priceRange: "$$",
+      rating: 4.2,
+      address: "222 Chinatown St, East Side",
+      phone: "555-567-8901",
+      website: "www.goldendragon.com",
+      openHours: "11:00 AM - 12:00 AM",
+      popularDishes: ["Kung Pao Chicken", "Dim Sum", "Peking Duck"],
+      image: "/uploads/sample5.jpg",
+    },
+  ];
 
   const filterOptions = [
     { id: "cuisine", name: "Cuisine", values: ["Italian", "Indian", "Mexican", "Japanese", "Chinese"] },
@@ -116,7 +116,7 @@ const RestaurantsPage = () => {
       } catch (err) {
         console.error(err);
         toast.error("Failed to load. Showing mock data.");
-        setAllRestaurants(mockRestaurants); 
+        setAllRestaurants(mockRestaurants);
         setFilteredRestaurants(mockRestaurants);
       }
     };
@@ -146,38 +146,38 @@ const RestaurantsPage = () => {
     setFavoriteRestaurants(list);
   };
 
-  
-const handleAddToFavorites = async (restaurant) => {
-  if (favoriteRestaurants.find(r => r._id === restaurant._id)) {
-    toast("Already saved", { description: `${restaurant.name} is already saved.` });
-    return;
-  }
 
-  try {
-    const user = getAuth().currentUser;
-    const token = await getIdToken(user, true);
+  const handleAddToFavorites = async (restaurant) => {
+    if (favoriteRestaurants.find(r => r._id === restaurant._id)) {
+      toast("Already saved", { description: `${restaurant.name} is already saved.` });
+      return;
+    }
 
-    const res = await fetch(`${API_BASE}/swipe/restaurant`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ restaurantId: restaurant._id }),
-    });
+    try {
+      const user = getAuth().currentUser;
+      const token = await getIdToken(user, true);
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to save");
+      const res = await fetch(`${API_BASE}/swipe/restaurant`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ restaurantId: restaurant._id }),
+      });
 
-    const updated = [...favoriteRestaurants, restaurant];
-    localStorage.setItem("likedRestaurants", JSON.stringify(updated));
-    setFavoriteRestaurants(updated);
-    toast("Saved", { description: `${restaurant.name} added to your favorites.` });
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to save to server.");
-  }
-};
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save");
+
+      const updated = [...favoriteRestaurants, restaurant];
+      localStorage.setItem("likedRestaurants", JSON.stringify(updated));
+      setFavoriteRestaurants(updated);
+      toast("Saved", { description: `${restaurant.name} added to your favorites.` });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save to server.");
+    }
+  };
 
   const handleRemoveFromFavorites = (id) => {
     const updated = favoriteRestaurants.filter(r => r._id !== id);
@@ -186,14 +186,13 @@ const handleAddToFavorites = async (restaurant) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Find Restaurants</h1>
-
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">Find Restaurants</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-4xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="browse">Browse</TabsTrigger>
-            <TabsTrigger value="favorites">Favorites ({favoriteRestaurants.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#121826] text-white">
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="browse">Browse</TabsTrigger>
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="favorites">Favorites ({favoriteRestaurants.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="browse">

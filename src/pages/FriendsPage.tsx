@@ -219,14 +219,13 @@ const FriendsPage = () => {
   const current = filteredFriends[currentIndex];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Find Friends</h1>
-
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">Find Friends</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="discover">Discover</TabsTrigger>
-            <TabsTrigger value="liked">Liked ({likedFriends.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#121826] text-white">
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="discover">Discover</TabsTrigger>
+            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="liked">Liked ({likedFriends.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="discover">
@@ -266,25 +265,45 @@ const FriendsPage = () => {
             {likedFriends.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {likedFriends.map((f) => (
-                  <div key={f._id} className="bg-white p-4 rounded shadow flex gap-4">
-                    <img src={`${SOCKET_URL}${f.profileImage || "/uploads/default.png"}`} alt={f.name} className="w-16 h-16 rounded-full" />
+                  <div
+                    key={f._id}
+                    className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex gap-4"
+                  >
+                    <img
+                      src={`${SOCKET_URL}${f.profileImage || "/uploads/default.png"}`}
+                      alt={f.name}
+                      className="w-16 h-16 rounded-full object-cover"
+                    />
                     <div className="flex-1">
-                      <h3 className="font-semibold">{f.name}</h3>
-                      <p className="text-sm text-gray-500">{f.nationality}</p>
+                      <h3 className="font-semibold text-lg">{f.name}</h3>
+                      <p className="text-sm text-gray-400">{f.nationality}</p>
                       <div className="flex gap-2 mt-2">
-                        <Button size="sm" onClick={() => navigate(`/chat?with=${f._id}`)}>Message</Button>
-                        <Button variant="outline" size="sm" className="text-red-500" onClick={() => handleUnlike(f._id)}>Remove</Button>
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          onClick={() => navigate(`/chat?with=${f._id}`)}
+                        >
+                          Message
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                          onClick={() => handleUnlike(f._id)}
+                        >
+                          Remove
+                        </Button>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-12 text-gray-400">
                 <p>You haven't liked anyone yet.</p>
               </div>
             )}
           </TabsContent>
+
         </Tabs>
       </div>
 
