@@ -10,6 +10,13 @@ import { toast } from "@/components/ui/sonner";
 import { API_BASE, SOCKET_URL } from "@/lib/api";
 import { getAuth, getIdToken } from "firebase/auth";
 
+const getImageUrl = (path: string) => {
+  if (!path) return "/uploads/default.png";
+  if (path.startsWith("/images")) return path; // from public folder
+  return `${SOCKET_URL}${path}`; // uploaded from database
+};
+
+
 type Roommate = {
   _id: string;
   name: string;
@@ -34,7 +41,7 @@ const mockRoommates: Roommate[] = [
     budget: "$900",
     moveInDate: "2024-09-01",
     bio: "CS student who enjoys calm nights and clean shared spaces.",
-    profileImage: "/uploads/sample1.jpg",
+    profileImage: "/images/User_1.jpg",
     lifestyle: ["Non-smoker", "Early Riser", "Clean"],
     interests: ["Basketball", "Gaming", "Coding"],
   },
@@ -47,7 +54,7 @@ const mockRoommates: Roommate[] = [
     budget: "$850",
     moveInDate: "2024-08-15",
     bio: "Love music, cooking, and traveling. Looking for a chill roommate.",
-    profileImage: "/uploads/sample2.jpg",
+    profileImage: "/images/User_5.jpg",
     lifestyle: ["Pet Lover", "Clean"],
     interests: ["Music", "Cooking", "Travel"],
   },
@@ -60,33 +67,33 @@ const mockRoommates: Roommate[] = [
     budget: "$1000",
     moveInDate: "2024-07-01",
     bio: "Quiet and respectful. Prefer tidy shared spaces.",
-    profileImage: "/uploads/sample3.jpg",
+    profileImage: "/images/User_2.jpg",
     lifestyle: ["Non-smoker", "Night Owl"],
     interests: ["Cricket", "Finance", "Movies"],
   },
   {
     _id: "mock-r4",
-    name: "Fatima Zahra",
+    name: "Emma Wilson",
     age: 23,
     gender: "Female",
     occupation: "Working Professional",
     budget: "$950",
     moveInDate: "2024-10-01",
     bio: "Professional looking for a responsible roommate.",
-    profileImage: "/uploads/sample4.jpg",
+    profileImage: "/images/User_4.jpg",
     lifestyle: ["Early Riser", "Non-smoker", "Clean"],
     interests: ["Reading", "Yoga", "Volunteering"],
   },
   {
     _id: "mock-r5",
-    name: "Noah Smith",
+    name: "Omar Hassan",
     age: 25,
     gender: "Male",
     occupation: "Intern",
     budget: "$800",
     moveInDate: "2024-06-15",
     bio: "Intern at a startup, love quiet evenings and coffee.",
-    profileImage: "/uploads/sample5.jpg",
+    profileImage: "/images/User_3.jpg",
     lifestyle: ["Clean", "Night Owl"],
     interests: ["Startups", "Gaming", "Skiing"],
   },
@@ -254,7 +261,7 @@ const RoommatesPage = () => {
             {currentRoommate ? (
               <SwipeCard
                 id={currentRoommate._id}
-                image={`${SOCKET_URL}${currentRoommate.profileImage || "/uploads/default.png"}`}
+                image={getImageUrl(currentRoommate.profileImage || "/uploads/default.png")}
                 title={currentRoommate.name}
                 subtitle={`${currentRoommate.age} • ${currentRoommate.gender}`}
                 details={
@@ -282,7 +289,7 @@ const RoommatesPage = () => {
                 {likedRoommates.map((roommate) => (
                   <div key={roommate._id} className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex">
                     <img
-                      src={`${SOCKET_URL}${roommate.profileImage || "/uploads/default.png"}`}
+                      src={getImageUrl(roommate.profileImage || "/uploads/default.png")}
                       alt={roommate.name}
                       className="w-16 h-16 rounded-full mr-4 object-cover"
                     />
