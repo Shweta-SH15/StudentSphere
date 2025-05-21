@@ -31,7 +31,7 @@ const FriendsPage = () => {
       interest: ["Photography", "Basketball", "Coding"],
       language: ["Mandarin", "English"],
       bio: "Computer Science student looking to make international friends and practice my English.",
-      profileImage: "/uploads/sample1.jpg",
+      profileImage: "/images/User_1.jpg",
     },
     {
       _id: "mock-f2",
@@ -42,7 +42,7 @@ const FriendsPage = () => {
       interest: ["Music", "Hiking", "Politics"],
       language: ["Spanish", "English", "French"],
       bio: "International Relations student who loves exploring the city and going to live music events.",
-      profileImage: "/uploads/sample2.jpg",
+      profileImage: "/images/User_5.jpg",
     },
     {
       _id: "mock-f3",
@@ -53,7 +53,7 @@ const FriendsPage = () => {
       interest: ["Cricket", "Cooking", "Startups"],
       language: ["Hindi", "English"],
       bio: "MBA student with a passion for entrepreneurship and connecting people.",
-      profileImage: "/uploads/sample3.jpg",
+      profileImage: "/images/User_2.jpg",
     },
     {
       _id: "mock-f4",
@@ -64,7 +64,7 @@ const FriendsPage = () => {
       interest: ["Swimming", "Travel", "Art"],
       language: ["English"],
       bio: "Fine Arts student looking for friends to explore galleries and museums with.",
-      profileImage: "/uploads/sample4.jpg",
+      profileImage: "/images/User_4.jpg",
     },
     {
       _id: "mock-f5",
@@ -75,7 +75,7 @@ const FriendsPage = () => {
       interest: ["Soccer", "History", "Film"],
       language: ["Arabic", "English"],
       bio: "Film studies major hoping to find friends with similar interests in cinema and culture.",
-      profileImage: "/uploads/sample5.jpg",
+      profileImage: "/images/User_3.jpg",
     },
   ];
 
@@ -150,54 +150,54 @@ const FriendsPage = () => {
   };
 
   const handleLike = async (id: string) => {
-  const friend = filteredFriends.find(f => f._id === id);
-  if (!friend || likedFriends.find(f => f._id === id)) return;
+    const friend = filteredFriends.find(f => f._id === id);
+    if (!friend || likedFriends.find(f => f._id === id)) return;
 
-  const isMock = id.startsWith("mock-");
-  const updatedLiked = [...likedFriends, friend];
-  saveLikedToStorage(updatedLiked);
+    const isMock = id.startsWith("mock-");
+    const updatedLiked = [...likedFriends, friend];
+    saveLikedToStorage(updatedLiked);
 
-  if (isMock) {
-    toast("Friend Liked!", { description: `You liked ${friend.name}` });
-    setCurrentIndex((prev) => (prev + 1) % filteredFriends.length);
-    return;
-  }
-
-  try {
-    const user = getAuth().currentUser;
-    const token = await getIdToken(user, true);
-
-    const res = await fetch(`${API_BASE}/swipe/friend`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ friendId: id })
-    });
-
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.error || "Failed to like friend");
+    if (isMock) {
+      toast("Friend Liked!", { description: `You liked ${friend.name}` });
+      setCurrentIndex((prev) => (prev + 1) % filteredFriends.length);
+      return;
     }
 
-    // Sync DB liked users after like
-    const likedRes = await fetch(`${API_BASE}/profile/friends`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const likedData = await likedRes.json();
-    const combined = [...likedData, ...updatedLiked.filter(f => f._id.startsWith("mock-"))];
-    setLikedFriends(combined);
-    localStorage.setItem("likedFriends", JSON.stringify(combined));
+    try {
+      const user = getAuth().currentUser;
+      const token = await getIdToken(user, true);
 
-    toast("Friend Liked!", { description: `You liked ${friend.name}` });
-  } catch (err) {
-    console.error(err);
-    toast.error("Could not like friend.");
-  }
+      const res = await fetch(`${API_BASE}/swipe/friend`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ friendId: id })
+      });
 
-  setCurrentIndex(prev => (prev + 1) % filteredFriends.length);
-};
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to like friend");
+      }
+
+      // Sync DB liked users after like
+      const likedRes = await fetch(`${API_BASE}/profile/friends`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const likedData = await likedRes.json();
+      const combined = [...likedData, ...updatedLiked.filter(f => f._id.startsWith("mock-"))];
+      setLikedFriends(combined);
+      localStorage.setItem("likedFriends", JSON.stringify(combined));
+
+      toast("Friend Liked!", { description: `You liked ${friend.name}` });
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not like friend.");
+    }
+
+    setCurrentIndex(prev => (prev + 1) % filteredFriends.length);
+  };
 
 
 
@@ -242,7 +242,11 @@ const FriendsPage = () => {
             {filteredFriends.length > 0 && current ? (
               <SwipeCard
                 id={current._id}
-                image={`${SOCKET_URL}${current.profileImage || "/uploads/default.png"}`}
+                image={
+                  current.profileImage?.startsWith("/images/")
+                    ? current.profileImage
+                    : `${SOCKET_URL}${current.profileImage || "/uploads/default.png"}`
+                }
                 title={current.name}
                 subtitle={`${current.age} • ${current.nationality}`}
                 details={
@@ -279,9 +283,11 @@ const FriendsPage = () => {
                     className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex gap-4"
                   >
                     <img
-                      src={`${SOCKET_URL}${f.profileImage || "/uploads/default.png"}`}
-                      alt={f.name}
-                      className="w-16 h-16 rounded-full object-cover"
+                      src={
+                        f.profileImage?.startsWith("/images/")
+                          ? f.profileImage
+                          : `${SOCKET_URL}${f.profileImage || "/uploads/default.png"}`
+                      }
                     />
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{f.name}</h3>
