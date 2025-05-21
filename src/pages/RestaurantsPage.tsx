@@ -10,6 +10,13 @@ import { toast } from "@/components/ui/sonner";
 import { API_BASE, SOCKET_URL } from "@/lib/api";
 import { getAuth, getIdToken } from "firebase/auth"; // Add this at the top if not already
 
+const getImageUrl = (path: string) => {
+  if (!path) return "/images/default.png"; // fallback image
+  if (path.startsWith("/images")) return path; // served from public folder
+  return `${SOCKET_URL}${path}`; // served from server
+};
+
+
 const RestaurantsPage = () => {
   const { isAuthenticated } = useAuth();
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -31,7 +38,7 @@ const RestaurantsPage = () => {
       website: "www.bellaitalia.com",
       openHours: "11:00 AM - 10:00 PM",
       popularDishes: ["Margherita Pizza", "Lasagna", "Tiramisu"],
-      image: "/uploads/sample1.jpg",
+      image: "/images/restaurants/res-1.jpg",
     },
     {
       _id: "mock-r2",
@@ -44,7 +51,7 @@ const RestaurantsPage = () => {
       website: "www.spiceofindia.com",
       openHours: "12:00 PM - 11:00 PM",
       popularDishes: ["Butter Chicken", "Naan", "Biryani"],
-      image: "/uploads/sample2.jpg",
+      image: "/images/restaurants/res-2.jpg",
     },
     {
       _id: "mock-r3",
@@ -57,7 +64,7 @@ const RestaurantsPage = () => {
       website: "www.elmariachi.com",
       openHours: "11:30 AM - 9:30 PM",
       popularDishes: ["Tacos al Pastor", "Guacamole", "Churros"],
-      image: "/uploads/sample3.jpg",
+      image: "/images/restaurants/res-3.jpg",
     },
     {
       _id: "mock-r4",
@@ -70,7 +77,7 @@ const RestaurantsPage = () => {
       website: "www.sushiparadise.com",
       openHours: "5:00 PM - 11:00 PM",
       popularDishes: ["Dragon Roll", "Sashimi Platter", "Miso Soup"],
-      image: "/uploads/sample4.jpg",
+      image: "/images/restaurants/res-4.jpg",
     },
     {
       _id: "mock-r5",
@@ -83,7 +90,7 @@ const RestaurantsPage = () => {
       website: "www.goldendragon.com",
       openHours: "11:00 AM - 12:00 AM",
       popularDishes: ["Kung Pao Chicken", "Dim Sum", "Peking Duck"],
-      image: "/uploads/sample5.jpg",
+      image: "/images/restaurants/res-5.jpg",
     },
   ];
 
@@ -209,7 +216,7 @@ const RestaurantsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {filteredRestaurants.map(r => (
                 <Card key={r._id} className="overflow-hidden">
-                  <img src={`${SOCKET_URL}${r.image}`} className="h-40 w-full object-cover" />
+                  <img src={getImageUrl(r.image)} className="h-40 w-full object-cover" />
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-lg">{r.name}</h3>
                     <p className="text-sm text-gray-500">{r.address}</p>
@@ -233,7 +240,7 @@ const RestaurantsPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {favoriteRestaurants.map(r => (
                   <Card key={r._id} className="overflow-hidden">
-                    <img src={`${SOCKET_URL}${r.image}`} className="h-32 w-full object-cover" />
+                    <img src={getImageUrl(r.image)} className="h-32 w-full object-cover" />
                     <CardContent className="p-4">
                       <h3 className="font-semibold">{r.name}</h3>
                       <p className="text-sm text-gray-500">{r.phone}</p>
