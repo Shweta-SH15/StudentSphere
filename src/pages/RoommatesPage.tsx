@@ -95,9 +95,9 @@ const mockRoommates: Roommate[] = [
 const RoommatesPage = () => {
   const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [allRoommates, setAllRoommates] = useState<Roommate[]>([]);
-  const [likedRoommates, setLikedRoommates] = useState<Roommate[]>([]);
-  const [filteredRoommates, setFilteredRoommates] = useState<Roommate[]>([]);
+  const [allRoommates, setAllRoommates] = useState([]);
+  const [likedRoommates, setLikedRoommates] = useState([]);
+  const [filteredRoommates, setFilteredRoommates] = useState([]);
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
 
@@ -108,66 +108,106 @@ const RoommatesPage = () => {
     }
 
     const fetchData = async () => {
-      try {
-        const token = await getIdToken(getAuth().currentUser!, true);
+      const token = await getIdToken(getAuth().currentUser, true);
 
+      try {
         const [resSuggestions, resLiked] = await Promise.all([
-          fetch(`${API_BASE}/profile/roommate-suggestions`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE}/profile/roommates`, { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API_BASE}/profile/roommate-suggestions`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${API_BASE}/profile/roommates`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
         ]);
 
         const suggestions = await resSuggestions.json();
         const liked = await resLiked.json();
 
-        setAllRoommates(Array.isArray(suggestions) && suggestions.length ? suggestions : mockRoommates);
-        setFilteredRoommates(Array.isArray(suggestions) && suggestions.length ? suggestions : mockRoommates);
-        setLikedRoommates(Array.isArray(liked) ? liked : []);
+        const combined = [...mockRoommates, ...(Array.isArray(suggestions) ? suggestions : [])];
+        setAllRoommates(combined);
+        setFilteredRoommates(combined);
+
+        const localLiked = JSON.parse(localStorage.getItem("likedRoommates") || "[]");
+        const mergedLiked = [...(Array.isArray(liked) ? liked : []), ...localLiked.filter(m => m._id.startsWith("mock-"))];
+        setLikedRoommates(mergedLiked);
       } catch (err) {
-        console.error(err);
+        console.error("Error loading roommates:", err);
         setAllRoommates(mockRoommates);
         setFilteredRoommates(mockRoommates);
+        const localLiked = JSON.parse(localStorage.getItem("likedRoommates") || "[]");
+        setLikedRoommates(localLiked);
       }
     };
 
     fetchData();
   }, [isAuthenticated]);
 
-  const handleLike = async (id: string) => {
-    const liked = filteredRoommates.find(item => item._id === id);
-    if (!liked || likedRoommates.some(r => r._id === id)) return;
+  const saveMockLikes = (updated) => {
+    localStorage.setItem("likedRoommates", JSON.stringify(updated.filter(r => r._id.startsWith("mock-"))));
+    setLikedRoommates(updated);
+  };
 
-    try {
-      const token = await getIdToken(getAuth().currentUser!, true);
+  const handleLike = async (id) => {
+    const roommate = filteredRoommates.find(r => r._id === id);
+    if (!roommate || likedRoommates.some(r => r._id === id)) return;
 
-      const res = await fetch(`${API_BASE}/swipe/roommate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ roommateId: liked._id })
-      });
+    const isMock = id.startsWith("mock-");
+    if (isMock) {
+      const updated = [...likedRoommates, roommate];
+      saveMockLikes(updated);
+      toast("Saved (Local)", { description: `You liked ${roommate.name}` });
+    } else {
+      try {
+        const token = await getIdToken(getAuth().currentUser, true);
+        await fetch(`${API_BASE}/swipe/roommate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ roommateId: id })
+        });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not save roommate");
-
-      const updated = [...likedRoommates, liked];
-      setLikedRoommates(updated);
-      localStorage.setItem("likedRoommates", JSON.stringify(updated));
-      toast.success(`You liked ${liked.name}`);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to like roommate");
+        const likedRes = await fetch(`${API_BASE}/profile/roommates`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const likedData = await likedRes.json();
+        const updated = [...likedData, ...likedRoommates.filter(m => m._id.startsWith("mock-"))];
+        setLikedRoommates(updated);
+        toast("Saved", { description: `You liked ${roommate.name}` });
+      } catch (err) {
+        console.error("Failed to like roommate:", err);
+        toast.error("Could not like roommate");
+      }
     }
 
     setCurrentIndex((i) => (i + 1) % filteredRoommates.length);
   };
 
-  const handleUnlike = (id: string) => {
+  const handleUnlike = async (id) => {
+    const isMock = id.startsWith("mock-");
     const updated = likedRoommates.filter(r => r._id !== id);
-    setLikedRoommates(updated);
-    localStorage.setItem("likedRoommates", JSON.stringify(updated));
-    toast("Removed", { description: `You unliked this roommate.` });
+
+    if (isMock) {
+      saveMockLikes(updated);
+      toast("Removed", { description: "Removed from local liked" });
+    } else {
+      try {
+        const token = await getIdToken(getAuth().currentUser, true);
+        await fetch(`${API_BASE}/swipe/unlike-roommate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ roommateId: id })
+        });
+        saveMockLikes(updated);
+        toast("Removed", { description: "Removed from liked" });
+      } catch {
+        toast.error("Failed to remove");
+      }
+    }
   };
 
   const handleDislike = () => {
@@ -180,18 +220,18 @@ const RoommatesPage = () => {
     { id: "lifestyle", name: "Lifestyle", values: ["Non-smoker", "Early Riser", "Night Owl", "Pet Lover", "Clean"] },
   ];
 
-  const handleFilterChange = (filterId: string, value: string) => {
+  const handleFilterChange = (filterId, value) => {
     let filtered = allRoommates;
     if (filterId === "gender") {
-      filtered = allRoommates.filter(r => r.gender === value);
+      filtered = filtered.filter(r => r.gender === value);
     } else if (filterId === "age") {
-      filtered = allRoommates.filter(r =>
+      filtered = filtered.filter(r =>
         value === "18-21" ? r.age <= 21 :
           value === "22-25" ? r.age >= 22 && r.age <= 25 :
             r.age >= 26
       );
     } else if (filterId === "lifestyle") {
-      filtered = allRoommates.filter(r => r.lifestyle?.includes(value));
+      filtered = filtered.filter(r => r.lifestyle?.includes(value));
     }
     setFilteredRoommates(filtered);
     setCurrentIndex(0);
@@ -205,8 +245,8 @@ const RoommatesPage = () => {
         <h1 className="text-3xl font-bold text-center mb-6 text-white">Find Roommates</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
           <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#121826] text-white">
-            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="discover">Discover</TabsTrigger>
-            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="liked">Liked ({likedRoommates.length})</TabsTrigger>
+            <TabsTrigger value="discover">Discover</TabsTrigger>
+            <TabsTrigger value="liked">Liked ({likedRoommates.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="discover">
@@ -214,7 +254,7 @@ const RoommatesPage = () => {
             {currentRoommate ? (
               <SwipeCard
                 id={currentRoommate._id}
-                image={`${SOCKET_URL}${currentRoommate.profileImage}`}
+                image={`${SOCKET_URL}${currentRoommate.profileImage || "/uploads/default.png"}`}
                 title={currentRoommate.name}
                 subtitle={`${currentRoommate.age} • ${currentRoommate.gender}`}
                 details={
@@ -229,7 +269,7 @@ const RoommatesPage = () => {
                   </div>
                 }
                 onLike={() => handleLike(currentRoommate._id)}
-                onDislike={() => handleDislike()}
+                onDislike={handleDislike}
               />
             ) : (
               <p className="text-center py-12 text-gray-500">No roommates found.</p>
@@ -240,10 +280,7 @@ const RoommatesPage = () => {
             {likedRoommates.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {likedRoommates.map((roommate) => (
-                  <div
-                    key={roommate._id}
-                    className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex"
-                  >
+                  <div key={roommate._id} className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex">
                     <img
                       src={`${SOCKET_URL}${roommate.profileImage || "/uploads/default.png"}`}
                       alt={roommate.name}
@@ -270,15 +307,10 @@ const RoommatesPage = () => {
               <p className="text-center py-12 text-gray-500">No liked roommates yet.</p>
             )}
           </TabsContent>
-
         </Tabs>
       </div>
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        defaultView="login"
-      />
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} defaultView="login" />
     </div>
   );
 };

@@ -62,14 +62,22 @@ exports.likeAccommodation = async (req, res) => {
 exports.likeRestaurant = async (req, res) => {
   try {
     const { restaurantId } = req.body;
+    const userId = req.user.uid;
+
+    if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+      return res.status(400).json({ error: "Invalid restaurantId format" });
+    }
+
     await User.findByIdAndUpdate(
-      req.user.uid,
+      userId,
       { $addToSet: { likedRestaurants: restaurantId } },
       { new: true }
     );
-    res.json({ message: 'Restaurant liked!' });
+
+    res.json({ message: "Restaurant liked!" });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to like restaurant' });
+    console.error("Failed to like restaurant:", err);
+    res.status(500).json({ error: "Failed to like restaurant" });
   }
 };
 

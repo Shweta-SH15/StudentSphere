@@ -148,36 +148,45 @@ const RestaurantsPage = () => {
 
 
   const handleAddToFavorites = async (restaurant) => {
-    if (favoriteRestaurants.find(r => r._id === restaurant._id)) {
-      toast("Already saved", { description: `${restaurant.name} is already saved.` });
-      return;
-    }
+  if (favoriteRestaurants.find(r => r._id === restaurant._id)) {
+    toast("Already saved", { description: `${restaurant.name} is already saved.` });
+    return;
+  }
 
-    try {
-      const user = getAuth().currentUser;
-      const token = await getIdToken(user, true);
+  // 🔐 Don't try to POST mock data to backend
+  const isMock = restaurant._id.startsWith("mock-");
+  if (isMock) {
+    const updated = [...favoriteRestaurants, restaurant];
+    saveFavoritesToStorage(updated);
+    toast("Saved (Local)", { description: `${restaurant.name} added locally.` });
+    return;
+  }
 
-      const res = await fetch(`${API_BASE}/swipe/restaurant`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ restaurantId: restaurant._id }),
-      });
+  try {
+    const user = getAuth().currentUser;
+    const token = await getIdToken(user, true);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save");
+    const res = await fetch(`${API_BASE}/swipe/restaurant`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ restaurantId: restaurant._id }),
+    });
 
-      const updated = [...favoriteRestaurants, restaurant];
-      localStorage.setItem("likedRestaurants", JSON.stringify(updated));
-      setFavoriteRestaurants(updated);
-      toast("Saved", { description: `${restaurant.name} added to your favorites.` });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to save to server.");
-    }
-  };
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to save");
+
+    const updated = [...favoriteRestaurants, restaurant];
+    saveFavoritesToStorage(updated);
+    toast("Saved", { description: `${restaurant.name} added to your favorites.` });
+  } catch (err) {
+    console.error("❌ Like failed:", err);
+    toast.error("Failed to save to server.");
+  }
+};
+
 
   const handleRemoveFromFavorites = (id) => {
     const updated = favoriteRestaurants.filter(r => r._id !== id);

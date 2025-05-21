@@ -150,46 +150,55 @@ const FriendsPage = () => {
   };
 
   const handleLike = async (id: string) => {
-    const friend = filteredFriends.find(f => f._id === id);
-    if (!friend || likedFriends.find(f => f._id === id)) return;
+  const friend = filteredFriends.find(f => f._id === id);
+  if (!friend || likedFriends.find(f => f._id === id)) return;
 
-    try {
-      const user = getAuth().currentUser;
-      const token = await getIdToken(user, true);
+  const isMock = id.startsWith("mock-");
+  const updatedLiked = [...likedFriends, friend];
+  saveLikedToStorage(updatedLiked);
 
-      // ✅ Send like to backend
-      const res = await fetch(`${API_BASE}/swipe/friend`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ friendId: id })
-      });
+  if (isMock) {
+    toast("Friend Liked!", { description: `You liked ${friend.name}` });
+    setCurrentIndex((prev) => (prev + 1) % filteredFriends.length);
+    return;
+  }
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Failed to like friend");
-      }
+  try {
+    const user = getAuth().currentUser;
+    const token = await getIdToken(user, true);
 
-      // ✅ Immediately fetch updated liked friends from backend
-      const likedRes = await fetch(`${API_BASE}/profile/friends`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    const res = await fetch(`${API_BASE}/swipe/friend`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ friendId: id })
+    });
 
-      const likedData = await likedRes.json();
-      setLikedFriends(Array.isArray(likedData) ? likedData : []);
-
-      toast("Friend Liked!", { description: `You liked ${friend.name}` });
-    } catch (err) {
-      console.error(err);
-      toast.error("Could not like friend.");
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || "Failed to like friend");
     }
 
-    setCurrentIndex(prev => (prev + 1) % filteredFriends.length);
-  };
+    // Sync DB liked users after like
+    const likedRes = await fetch(`${API_BASE}/profile/friends`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const likedData = await likedRes.json();
+    const combined = [...likedData, ...updatedLiked.filter(f => f._id.startsWith("mock-"))];
+    setLikedFriends(combined);
+    localStorage.setItem("likedFriends", JSON.stringify(combined));
+
+    toast("Friend Liked!", { description: `You liked ${friend.name}` });
+  } catch (err) {
+    console.error(err);
+    toast.error("Could not like friend.");
+  }
+
+  setCurrentIndex(prev => (prev + 1) % filteredFriends.length);
+};
+
 
 
 

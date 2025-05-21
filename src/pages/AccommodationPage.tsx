@@ -10,7 +10,6 @@ import { toast } from "@/components/ui/sonner";
 import { API_BASE, SOCKET_URL } from "@/lib/api";
 import { getAuth, getIdToken } from "firebase/auth";
 
-
 const mockAccommodations = [
   {
     _id: "mock-a1",
@@ -186,7 +185,7 @@ const AccommodationPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        const fallback = Array.isArray(data) && data.length ? data : mockAccommodations;
+        const fallback = Array.isArray(data) && data.length ? [...mockAccommodations, ...data] : mockAccommodations;
         setAllAccommodations(fallback);
         setFilteredAccommodations(fallback);
       } catch {
@@ -196,14 +195,19 @@ const AccommodationPage = () => {
     };
 
     const fetchLiked = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/profile/accommodations`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setLikedAccommodations(Array.isArray(data) ? data : []);
-      } catch {
-        setLikedAccommodations([]);
+      const localLiked = localStorage.getItem("likedAccommodations");
+      if (localLiked) {
+        setLikedAccommodations(JSON.parse(localLiked));
+      } else {
+        try {
+          const res = await fetch(`${API_BASE}/profile/accommodations`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          setLikedAccommodations(data);
+        } catch {
+          setLikedAccommodations([]);
+        }
       }
     };
 
@@ -211,37 +215,29 @@ const AccommodationPage = () => {
     fetchLiked();
   }, [isAuthenticated]);
 
-  const handleFilterChange = (filterId, value) => {
-    let filtered = allAccommodations;
-
-    if (filterId === "type") {
-      filtered = filtered.filter(item => item.type === value);
-    } else if (filterId === "location") {
-      filtered = filtered.filter(item => item.location === value);
-    } else if (filterId === "price") {
-      filtered = filtered.filter(item => {
-        const price = parseInt(item.price.replace(/[^0-9]/g, ""));
-        if (value === "Under $800") return price < 800;
-        if (value === "$800-$1000") return price >= 800 && price <= 1000;
-        if (value === "$1000-$1200") return price > 1000 && price <= 1200;
-        if (value === "Above $1200") return price > 1200;
-        return true;
-      });
-    }
-
-    setFilteredAccommodations(filtered);
-    setCurrentIndex(0);
+  const saveMockToStorage = (updated) => {
+    localStorage.setItem("likedAccommodations", JSON.stringify(updated));
+    setLikedAccommodations(updated);
   };
 
   const handleLike = async (id) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    const token = await getIdToken(user, true);
+    const current = filteredAccommodations.find(item => item._id === id);
+    if (!current || likedAccommodations.some(item => item._id === id)) return;
 
-    const accommodation = filteredAccommodations.find(item => item._id === id);
-    if (!accommodation || likedAccommodations.some(item => item._id === id)) return;
+    const isMock = id.startsWith("mock-");
+    if (isMock) {
+      const updated = [...likedAccommodations, current];
+      saveMockToStorage(updated);
+      setCurrentIndex(i => (i + 1) % filteredAccommodations.length);
+      toast("Saved (Local)", { description: `${current.title} added to favorites.` });
+      return;
+    }
 
     try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const token = await getIdToken(user, true);
+
       await fetch(`${API_BASE}/swipe/accommodation`, {
         method: "POST",
         headers: {
@@ -251,10 +247,13 @@ const AccommodationPage = () => {
         body: JSON.stringify({ accommodationId: id })
       });
 
-      const updated = [...likedAccommodations, accommodation];
-      setLikedAccommodations(updated);
-      toast("Saved!", { description: `${accommodation.title} added to favorites.` });
-    } catch (err) {
+      const res = await fetch(`${API_BASE}/profile/accommodations`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setLikedAccommodations(data);
+      toast("Saved!", { description: `${current.title} added to favorites.` });
+    } catch {
       toast.error("Failed to save.");
     }
 
@@ -266,11 +265,19 @@ const AccommodationPage = () => {
   };
 
   const handleUnlike = async (id) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-    const token = await getIdToken(user, true);
+    const isMock = id.startsWith("mock-");
+
+    if (isMock) {
+      const updated = likedAccommodations.filter(item => item._id !== id);
+      saveMockToStorage(updated);
+      return;
+    }
 
     try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const token = await getIdToken(user, true);
+
       await fetch(`${API_BASE}/swipe/unlike-accommodation`, {
         method: "POST",
         headers: {
@@ -290,14 +297,36 @@ const AccommodationPage = () => {
 
   const current = filteredAccommodations[currentIndex];
 
+  const handleFilterChange = (filterId, value) => {
+  let filtered = allAccommodations;
+
+  if (filterId === "type") {
+    filtered = filtered.filter(item => item.type === value);
+  } else if (filterId === "location") {
+    filtered = filtered.filter(item => item.location === value);
+  } else if (filterId === "price") {
+    filtered = filtered.filter(item => {
+      const price = parseInt(item.price.replace(/[^0-9]/g, ""));
+      if (value === "Under $800") return price < 800;
+      if (value === "$800-$1000") return price >= 800 && price <= 1000;
+      if (value === "$1000-$1200") return price > 1000 && price <= 1200;
+      if (value === "Above $1200") return price > 1200;
+      return true;
+    });
+  }
+
+  setFilteredAccommodations(filtered);
+  setCurrentIndex(0);
+};
+
   return (
     <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold text-center mb-6 text-white">Find Accommodation</h1>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-3xl mx-auto">
           <TabsList className="grid w-full grid-cols-2 mb-8 bg-[#121826] text-white">
-            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="discover">Discover</TabsTrigger>
-            <TabsTrigger className="text-white data-[state=active]:bg-[#1f2937]" value="saved">Saved ({likedAccommodations.length})</TabsTrigger>
+            <TabsTrigger value="discover">Discover</TabsTrigger>
+            <TabsTrigger value="saved">Saved ({likedAccommodations.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="discover">
@@ -312,12 +341,12 @@ const AccommodationPage = () => {
                   <div className="space-y-3">
                     <p className="text-sm text-gray-600">{current.description}</p>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline">{current.type}</Badge>
-                      <Badge variant="outline">{current.bedrooms} Bed</Badge>
-                      <Badge variant="outline">{current.bathrooms} Bath</Badge>
+                      <Badge>{current.type}</Badge>
+                      <Badge>{current.bedrooms} Bed</Badge>
+                      <Badge>{current.bathrooms} Bath</Badge>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {current.features.map((f, i) => (
+                      {current.features?.map((f, i) => (
                         <Badge key={i} variant="secondary">{f}</Badge>
                       ))}
                     </div>
