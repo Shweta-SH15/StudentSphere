@@ -276,11 +276,11 @@ const FriendsPage = () => {
 
           <TabsContent value="liked">
             {likedFriends.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {likedFriends.map((f) => (
                   <div
                     key={f._id}
-                    className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex gap-4"
+                    className="flex items-start bg-[#1f2937] rounded-lg overflow-hidden shadow-md"
                   >
                     <img
                       src={
@@ -288,10 +288,12 @@ const FriendsPage = () => {
                           ? f.profileImage
                           : `${SOCKET_URL}${f.profileImage || "/uploads/default.png"}`
                       }
+                      alt={f.name}
+                      className="w-28 h-28 object-cover rounded-l-lg"
                     />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{f.name}</h3>
-                      <p className="text-sm text-gray-400">{f.nationality}</p>
+                    <div className="flex-1 p-4">
+                      <h3 className="text-lg font-semibold">{f.name}</h3>
+                      <p className="text-sm text-gray-400 mb-1">{f.nationality}</p>
                       <div className="flex gap-2 mt-2">
                         <Button
                           size="sm"
@@ -312,6 +314,7 @@ const FriendsPage = () => {
                   </div>
                 ))}
               </div>
+
             ) : (
               <div className="text-center py-12 text-gray-400">
                 <p>You haven't liked anyone yet.</p>

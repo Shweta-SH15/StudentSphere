@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 
 interface Testimonial {
@@ -35,16 +34,16 @@ const testimonials: Testimonial[] = [
 
 const TestimonialsSection = () => {
   return (
-    <section className="py-12 md:py-16 bg-white">
+    <section className="py-12 md:py-16 bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
       <div className="container mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-4">What Students Say</h2>
-        <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
-          Hear from international students who have found their community through ImmigrantConnect
+        <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+          Hear from international students who have found their community through <span className="text-primary">ImmigrantConnect</span>
         </p>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="overflow-hidden">
+            <Card key={testimonial.id} className="bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))]">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
                   <img
@@ -54,10 +53,10 @@ const TestimonialsSection = () => {
                   />
                   <div>
                     <h3 className="font-semibold">{testimonial.name}</h3>
-                    <p className="text-sm text-gray-500">from {testimonial.country}</p>
+                    <p className="text-sm text-muted-foreground">from {testimonial.country}</p>
                   </div>
                 </div>
-                <p className="text-gray-600 italic">"{testimonial.quote}"</p>
+                <p className="italic text-muted-foreground">"{testimonial.quote}"</p>
               </CardContent>
             </Card>
           ))}

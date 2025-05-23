@@ -45,6 +45,20 @@ exports.likeRoommate = async (req, res) => {
   }
 };
 
+exports.unlikeRoommate = async (req, res) => {
+  try {
+    const { roommateId } = req.body;
+    await User.findByIdAndUpdate(
+      req.user.uid,
+      { $pull: { likedRoommates: roommateId } },
+      { new: true }
+    );
+    res.json({ message: 'Roommate unliked!' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unlike roommate' });
+  }
+};
+
 exports.likeAccommodation = async (req, res) => {
   try {
     const { accommodationId } = req.body;
@@ -56,6 +70,21 @@ exports.likeAccommodation = async (req, res) => {
     res.json({ message: 'Accommodation liked!' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to like accommodation' });
+  }
+};
+
+// Unlike Accommodation
+exports.unlikeAccommodation = async (req, res) => {
+  try {
+    const { accommodationId } = req.body;
+    await User.findByIdAndUpdate(
+      req.user.uid,
+      { $pull: { likedAccommodations: accommodationId } },
+      { new: true }
+    );
+    res.json({ message: 'Accommodation unliked!' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unlike accommodation' });
   }
 };
 
@@ -78,6 +107,21 @@ exports.likeRestaurant = async (req, res) => {
   } catch (err) {
     console.error("Failed to like restaurant:", err);
     res.status(500).json({ error: "Failed to like restaurant" });
+  }
+};
+
+// Unlike Restaurant
+exports.unlikeRestaurant = async (req, res) => {
+  try {
+    const { restaurantId } = req.body;
+    await User.findByIdAndUpdate(
+      req.user.uid,
+      { $pull: { likedRestaurants: restaurantId } },
+      { new: true }
+    );
+    res.json({ message: 'Restaurant unliked!' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to unlike restaurant' });
   }
 };
 
