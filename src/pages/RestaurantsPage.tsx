@@ -9,6 +9,7 @@ import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
 import { API_BASE, SOCKET_URL } from "@/lib/api";
 import { getAuth, getIdToken } from "firebase/auth"; // Add this at the top if not already
+import RestaurantModal from "@/components/RestaurantModal";
 
 const getImageUrl = (path: string) => {
   if (!path) return "/images/default.png"; // fallback image
@@ -27,72 +28,85 @@ const RestaurantsPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
 
   const mockRestaurants = [
-    {
-      _id: "mock-r1",
-      name: "Bella Italia",
-      cuisine: "Italian",
-      priceRange: "$$",
-      rating: 4.5,
-      address: "123 College St, Downtown",
-      phone: "555-123-4567",
-      website: "www.bellaitalia.com",
-      openHours: "11:00 AM - 10:00 PM",
-      popularDishes: ["Margherita Pizza", "Lasagna", "Tiramisu"],
-      image: "/images/restaurants/res-1.jpg",
-    },
-    {
-      _id: "mock-r2",
-      name: "Spice of India",
-      cuisine: "Indian",
-      priceRange: "$$",
-      rating: 4.3,
-      address: "456 University Ave, Midtown",
-      phone: "555-234-5678",
-      website: "www.spiceofindia.com",
-      openHours: "12:00 PM - 11:00 PM",
-      popularDishes: ["Butter Chicken", "Naan", "Biryani"],
-      image: "/images/restaurants/res-2.jpg",
-    },
-    {
-      _id: "mock-r3",
-      name: "El Mariachi",
-      cuisine: "Mexican",
-      priceRange: "$",
-      rating: 4.6,
-      address: "789 Main St, Downtown",
-      phone: "555-345-6789",
-      website: "www.elmariachi.com",
-      openHours: "11:30 AM - 9:30 PM",
-      popularDishes: ["Tacos al Pastor", "Guacamole", "Churros"],
-      image: "/images/restaurants/res-3.jpg",
-    },
-    {
-      _id: "mock-r4",
-      name: "Sushi Paradise",
-      cuisine: "Japanese",
-      priceRange: "$$$",
-      rating: 4.8,
-      address: "101 Queen St, Financial District",
-      phone: "555-456-7890",
-      website: "www.sushiparadise.com",
-      openHours: "5:00 PM - 11:00 PM",
-      popularDishes: ["Dragon Roll", "Sashimi Platter", "Miso Soup"],
-      image: "/images/restaurants/res-4.jpg",
-    },
-    {
-      _id: "mock-r5",
-      name: "Golden Dragon",
-      cuisine: "Chinese",
-      priceRange: "$$",
-      rating: 4.2,
-      address: "222 Chinatown St, East Side",
-      phone: "555-567-8901",
-      website: "www.goldendragon.com",
-      openHours: "11:00 AM - 12:00 AM",
-      popularDishes: ["Kung Pao Chicken", "Dim Sum", "Peking Duck"],
-      image: "/images/restaurants/res-5.jpg",
-    },
-  ];
+  {
+    _id: "mock-r1",
+    name: "Bella Italia",
+    cuisine: "Italian",
+    priceRange: "$$",
+    rating: 4.5,
+    address: "123 College St, Downtown",
+    phone: "555-123-4567",
+    website: "www.bellaitalia.com",
+    openHours: "11:00 AM - 10:00 PM",
+    image: "/images/restaurants/res-1.jpg",
+    menu: [
+      {
+        category: "Appetizers",
+        items: [
+          { name: "Bruschetta", description: "Toasted bread with tomatoes", price: "$7", image: "/images/dishes/bruschetta.jpg" },
+          { name: "Caprese Salad", description: "Tomatoes and mozzarella", price: "$8", image: "/images/dishes/caprese.jpg" },
+          { name: "Garlic Bread", description: "Toasted bread with garlic butter", price: "$6", image: "/images/dishes/garlicbread.jpg" }
+        ]
+      },
+      {
+        category: "Main Course",
+        items: [
+          { name: "Lasagna", description: "Layered pasta with meat", price: "$14", image: "/images/dishes/lasagna.jpg" },
+          { name: "Margherita Pizza", description: "Classic tomato basil pizza", price: "$13", image: "/images/dishes/margherita.jpg" },
+          { name: "Fettuccine Alfredo", description: "Creamy pasta with parmesan", price: "$15", image: "/images/dishes/alfredo.jpg" }
+        ]
+      },
+      {
+        category: "Desserts",
+        items: [
+          { name: "Tiramisu", description: "Coffee-flavored dessert", price: "$6", image: "/images/dishes/tiramisu.jpg" },
+          { name: "Gelato", description: "Italian ice cream", price: "$5", image: "/images/dishes/gelato.jpg" },
+          { name: "Panna Cotta", description: "Creamy dessert with berry sauce", price: "$6", image: "/images/dishes/pannacotta.jpg" }
+        ]
+      }
+    ]
+  },
+  {
+    _id: "mock-r2",
+    name: "Spice of India",
+    cuisine: "Indian",
+    priceRange: "$$",
+    rating: 4.3,
+    address: "456 University Ave, Midtown",
+    phone: "555-234-5678",
+    website: "www.spiceofindia.com",
+    openHours: "12:00 PM - 11:00 PM",
+    image: "/images/restaurants/res-2.jpg",
+    menu: [
+      {
+        category: "Starters",
+        items: [
+          { name: "Samosa", description: "Spiced potato pastry", price: "$5", image: "/images/dishes/samosa.jpg" },
+          { name: "Pakora", description: "Fried veggie fritters", price: "$6", image: "/images/dishes/pakora.jpg" },
+          { name: "Aloo Tikki", description: "Spiced potato patties", price: "$6", image: "/images/dishes/alootikki.jpg" }
+        ]
+      },
+      {
+        category: "Main Course",
+        items: [
+          { name: "Butter Chicken", description: "Creamy tomato chicken curry", price: "$15", image: "/images/dishes/butterchicken.jpg" },
+          { name: "Paneer Tikka", description: "Grilled cottage cheese", price: "$14", image: "/images/dishes/paneer.jpg" },
+          { name: "Rogan Josh", description: "Spiced lamb curry", price: "$16", image: "/images/dishes/roganjosh.jpg" }
+        ]
+      },
+      {
+        category: "Sides",
+        items: [
+          { name: "Garlic Naan", description: "Garlic-infused bread", price: "$3", image: "/images/dishes/naan.jpg" },
+          { name: "Biryani", description: "Spiced rice with chicken", price: "$13", image: "/images/dishes/biryani.jpg" },
+          { name: "Raita", description: "Yogurt with cucumber", price: "$4", image: "/images/dishes/raita.jpg" }
+        ]
+      }
+    ]
+  }
+];
+
+
 
   const filterOptions = [
     { id: "cuisine", name: "Cuisine", values: ["Italian", "Indian", "Mexican", "Japanese", "Chinese"] },
@@ -155,44 +169,44 @@ const RestaurantsPage = () => {
 
 
   const handleAddToFavorites = async (restaurant) => {
-  if (favoriteRestaurants.find(r => r._id === restaurant._id)) {
-    toast("Already saved", { description: `${restaurant.name} is already saved.` });
-    return;
-  }
+    if (favoriteRestaurants.find(r => r._id === restaurant._id)) {
+      toast("Already saved", { description: `${restaurant.name} is already saved.` });
+      return;
+    }
 
-  // 🔐 Don't try to POST mock data to backend
-  const isMock = restaurant._id.startsWith("mock-");
-  if (isMock) {
-    const updated = [...favoriteRestaurants, restaurant];
-    saveFavoritesToStorage(updated);
-    toast("Saved (Local)", { description: `${restaurant.name} added locally.` });
-    return;
-  }
+    // 🔐 Don't try to POST mock data to backend
+    const isMock = restaurant._id.startsWith("mock-");
+    if (isMock) {
+      const updated = [...favoriteRestaurants, restaurant];
+      saveFavoritesToStorage(updated);
+      toast("Saved (Local)", { description: `${restaurant.name} added locally.` });
+      return;
+    }
 
-  try {
-    const user = getAuth().currentUser;
-    const token = await getIdToken(user, true);
+    try {
+      const user = getAuth().currentUser;
+      const token = await getIdToken(user, true);
 
-    const res = await fetch(`${API_BASE}/swipe/restaurant`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ restaurantId: restaurant._id }),
-    });
+      const res = await fetch(`${API_BASE}/swipe/restaurant`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ restaurantId: restaurant._id }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to save");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save");
 
-    const updated = [...favoriteRestaurants, restaurant];
-    saveFavoritesToStorage(updated);
-    toast("Saved", { description: `${restaurant.name} added to your favorites.` });
-  } catch (err) {
-    console.error("❌ Like failed:", err);
-    toast.error("Failed to save to server.");
-  }
-};
+      const updated = [...favoriteRestaurants, restaurant];
+      saveFavoritesToStorage(updated);
+      toast("Saved", { description: `${restaurant.name} added to your favorites.` });
+    } catch (err) {
+      console.error("❌ Like failed:", err);
+      toast.error("Failed to save to server.");
+    }
+  };
 
 
   const handleRemoveFromFavorites = (id) => {
@@ -271,6 +285,14 @@ const RestaurantsPage = () => {
         onClose={() => setIsAuthModalOpen(false)}
         defaultView="login"
       />
+
+      {selectedRestaurant && (
+        <RestaurantModal
+          restaurant={selectedRestaurant}
+          onClose={() => setSelectedRestaurant(null)}
+        />
+      )}
+
     </div>
   );
 };
