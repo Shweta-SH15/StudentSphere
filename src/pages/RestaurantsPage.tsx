@@ -43,25 +43,25 @@ const RestaurantsPage = () => {
       {
         category: "Appetizers",
         items: [
-          { name: "Bruschetta", description: "Toasted bread with tomatoes", price: "$7", image: "/images/dishes/bruschetta.jpg" },
-          { name: "Caprese Salad", description: "Tomatoes and mozzarella", price: "$8", image: "/images/dishes/caprese.jpg" },
-          { name: "Garlic Bread", description: "Toasted bread with garlic butter", price: "$6", image: "/images/dishes/garlicbread.jpg" }
-        ]
+          { name: "Bruschetta", description: "Toasted bread with tomatoes", price: "$7", image: "/images/restaurants/menu-r1/bruschetta.jpg" },
+          { name: "Caprese Salad", description: "Tomatoes and mozzarella", price: "$8", image: "/images/restaurants/menu-r1/caprese.jpg" },
+          { name: "Garlic Bread", description: "Toasted bread with garlic butter", price: "$6", image: "/images/restaurants/menu-r1/GarlicBread.jpg" }
+        ] 
       },
       {
         category: "Main Course",
         items: [
-          { name: "Lasagna", description: "Layered pasta with meat", price: "$14", image: "/images/dishes/lasagna.jpg" },
-          { name: "Margherita Pizza", description: "Classic tomato basil pizza", price: "$13", image: "/images/dishes/margherita.jpg" },
-          { name: "Fettuccine Alfredo", description: "Creamy pasta with parmesan", price: "$15", image: "/images/dishes/alfredo.jpg" }
+          { name: "Lasagna", description: "Layered pasta with meat", price: "$14", image: "/images/restaurants/menu-r1/lasagna.jpg" },
+          { name: "Margherita Pizza", description: "Classic tomato basil pizza", price: "$13", image: "/images/restaurants/menu-r1/FettuccineAlfredo.jpg" },
+          { name: "Fettuccine Alfredo", description: "Creamy pasta with parmesan", price: "$15", image: "/images/restaurants/menu-r1/Alfredo.jpg" }
         ]
       },
       {
         category: "Desserts",
         items: [
-          { name: "Tiramisu", description: "Coffee-flavored dessert", price: "$6", image: "/images/dishes/tiramisu.jpg" },
-          { name: "Gelato", description: "Italian ice cream", price: "$5", image: "/images/dishes/gelato.jpg" },
-          { name: "Panna Cotta", description: "Creamy dessert with berry sauce", price: "$6", image: "/images/dishes/pannacotta.jpg" }
+          { name: "Tiramisu", description: "Coffee-flavored dessert", price: "$6", image: "/images/restaurants/menu-r1/Tiramisu.jpg" },
+          { name: "Gelato", description: "Italian ice cream", price: "$5", image: "/images/restaurants/menu-r1/Gelato.jpg" },
+          { name: "Panna Cotta", description: "Creamy dessert with berry sauce", price: "$6", image: "/images/restaurants/menu-r1/PannaCotta.jpg" }
         ]
       }
     ]
