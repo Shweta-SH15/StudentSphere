@@ -43,25 +43,25 @@ const RestaurantsPage = () => {
       {
         category: "Appetizers",
         items: [
-          { name: "Bruschetta", description: "Toasted bread with tomatoes", price: "$7", image: "/images/restaurants/menu-r1/bruschetta.jpg" },
-          { name: "Caprese Salad", description: "Tomatoes and mozzarella", price: "$8", image: "/images/restaurants/menu-r1/caprese.jpg" },
-          { name: "Garlic Bread", description: "Toasted bread with garlic butter", price: "$6", image: "/images/restaurants/menu-r1/GarlicBread.jpg" }
-        ] 
+          { name: "Bruschetta", description: "Grilled bread topped with tomato and basil", price: "$7", image: "/images/restaurants/menu-r1/bruschetta.jpg" },
+          { name: "Caprese Salad", description: "Fresh mozzarella, tomatoes, and basil", price: "$8", image: "/images/restaurants/menu-r1/caprese.jpg" },
+          { name: "Garlic Bread", description: "Toasted bread with garlic and butter", price: "$6", image: "/images/restaurants/menu-r1/GarlicBread.jpg" }
+        ]
       },
       {
         category: "Main Course",
         items: [
-          { name: "Lasagna", description: "Layered pasta with meat", price: "$14", image: "/images/restaurants/menu-r1/lasagna.jpg" },
-          { name: "Margherita Pizza", description: "Classic tomato basil pizza", price: "$13", image: "/images/restaurants/menu-r1/FettuccineAlfredo.jpg" },
-          { name: "Fettuccine Alfredo", description: "Creamy pasta with parmesan", price: "$15", image: "/images/restaurants/menu-r1/Alfredo.jpg" }
+          { name: "Lasagna", description: "Layered pasta with beef and béchamel sauce", price: "$14", image: "/images/restaurants/menu-r1/lasagna.jpg" },
+          { name: "Margherita Pizza", description: "Tomato, mozzarella, and fresh basil", price: "$13", image: "/images/restaurants/menu-r1/MargheritaPizza.jpg" },
+          { name: "Spaghetti Carbonara", description: "Pasta with pancetta and creamy sauce", price: "$15", image: "/images/restaurants/menu-r1/Spaghetti.jpg" }
         ]
       },
       {
         category: "Desserts",
         items: [
-          { name: "Tiramisu", description: "Coffee-flavored dessert", price: "$6", image: "/images/restaurants/menu-r1/Tiramisu.jpg" },
-          { name: "Gelato", description: "Italian ice cream", price: "$5", image: "/images/restaurants/menu-r1/Gelato.jpg" },
-          { name: "Panna Cotta", description: "Creamy dessert with berry sauce", price: "$6", image: "/images/restaurants/menu-r1/PannaCotta.jpg" }
+          { name: "Tiramisu", description: "Coffee-flavored layered dessert", price: "$6", image: "/images/restaurants/menu-r1/Tiramisu.jpg" },
+          { name: "Panna Cotta", description: "Creamy Italian custard with berry coulis", price: "$7", image: "/images/restaurants/menu-r1/PannaCotta.jpg" },
+          { name: "Gelato", description: "Italian-style ice cream (chocolate/vanilla)", price: "$5", image: "/images/restaurants/menu-r1/Gelato.jpg" }
         ]
       }
     ]
@@ -81,25 +81,139 @@ const RestaurantsPage = () => {
       {
         category: "Starters",
         items: [
-          { name: "Samosa", description: "Spiced potato pastry", price: "$5", image: "/images/dishes/samosa.jpg" },
-          { name: "Pakora", description: "Fried veggie fritters", price: "$6", image: "/images/dishes/pakora.jpg" },
-          { name: "Aloo Tikki", description: "Spiced potato patties", price: "$6", image: "/images/dishes/alootikki.jpg" }
+          { name: "Samosa", description: "Deep-fried pastry with spiced potatoes", price: "$5", image: "/images/restaurants/menu-r2/samosa.jpg" },
+          { name: "Paneer Pakora", description: "Battered and fried cottage cheese", price: "$6", image: "/images/restaurants/menu-r2/pakora.jpg" },
+          { name: "Chicken Tikka", description: "Spiced grilled chicken skewers", price: "$8", image: "/images/restaurants/menu-r2/chickenTikka.jpg" }
         ]
       },
       {
         category: "Main Course",
         items: [
-          { name: "Butter Chicken", description: "Creamy tomato chicken curry", price: "$15", image: "/images/dishes/butterchicken.jpg" },
-          { name: "Paneer Tikka", description: "Grilled cottage cheese", price: "$14", image: "/images/dishes/paneer.jpg" },
-          { name: "Rogan Josh", description: "Spiced lamb curry", price: "$16", image: "/images/dishes/roganjosh.jpg" }
+          { name: "Butter Chicken", description: "Creamy tomato-based chicken curry", price: "$15", image: "/images/restaurants/menu-r2/butterchicken.jpg" },
+          { name: "Paneer Tikka Masala", description: "Grilled paneer in spiced gravy", price: "$14", image: "/images/restaurants/menu-r2/paneer.jpg" },
+          { name: "Lamb Rogan Josh", description: "Slow-cooked lamb in curry", price: "$17", image: "/images/restaurants/menu-r2/roganjosh.jpg" }
         ]
       },
       {
         category: "Sides",
         items: [
-          { name: "Garlic Naan", description: "Garlic-infused bread", price: "$3", image: "/images/dishes/naan.jpg" },
-          { name: "Biryani", description: "Spiced rice with chicken", price: "$13", image: "/images/dishes/biryani.jpg" },
-          { name: "Raita", description: "Yogurt with cucumber", price: "$4", image: "/images/dishes/raita.jpg" }
+          { name: "Garlic Naan", description: "Fluffy bread with garlic", price: "$3", image: "/images/restaurants/menu-r2/naan.jpg" },
+          { name: "Vegetable Biryani", description: "Aromatic rice with mixed vegetables", price: "$12", image: "/images/restaurants/menu-r2/biryani.jpg" },
+          { name: "Raita", description: "Yogurt with cucumber and spices", price: "$2", image: "/images/restaurants/menu-r2/raita.jpg" }
+        ]
+      }
+    ]
+  },
+  {
+    _id: "mock-r3",
+    name: "El Mariachi",
+    cuisine: "Mexican",
+    priceRange: "$",
+    rating: 4.6,
+    address: "789 Main St, Downtown",
+    phone: "555-345-6789",
+    website: "www.elmariachi.com",
+    openHours: "11:30 AM - 9:30 PM",
+    image: "/images/restaurants/res-3.jpg",
+    menu: [
+      {
+        category: "Tacos",
+        items: [
+          { name: "Tacos al Pastor", description: "Spit-grilled pork with pineapple", price: "$9", image: "/images/dishes/alpastor.jpg" },
+          { name: "Fish Tacos", description: "Grilled fish with lime crema", price: "$10", image: "/images/dishes/fishtacos.jpg" },
+          { name: "Carnitas Tacos", description: "Slow-cooked pork with onions", price: "$9", image: "/images/dishes/carnitas.jpg" }
+        ]
+      },
+      {
+        category: "Sides",
+        items: [
+          { name: "Guacamole", description: "Fresh avocado dip", price: "$5", image: "/images/dishes/guacamole.jpg" },
+          { name: "Elote", description: "Mexican street corn", price: "$4", image: "/images/dishes/elote.jpg" },
+          { name: "Nachos", description: "Tortilla chips with cheese and jalapeños", price: "$7", image: "/images/dishes/nachos.jpg" }
+        ]
+      },
+      {
+        category: "Desserts",
+        items: [
+          { name: "Churros", description: "Fried dough with cinnamon sugar", price: "$4", image: "/images/dishes/churros.jpg" },
+          { name: "Flan", description: "Caramel custard dessert", price: "$5", image: "/images/dishes/flan.jpg" },
+          { name: "Tres Leches Cake", description: "Sponge cake soaked in milk", price: "$6", image: "/images/dishes/tresleches.jpg" }
+        ]
+      }
+    ]
+  },
+  {
+    _id: "mock-r4",
+    name: "Sushi Paradise",
+    cuisine: "Japanese",
+    priceRange: "$$$",
+    rating: 4.8,
+    address: "101 Queen St, Financial District",
+    phone: "555-456-7890",
+    website: "www.sushiparadise.com",
+    openHours: "5:00 PM - 11:00 PM",
+    image: "/images/restaurants/res-4.jpg",
+    menu: [
+      {
+        category: "Rolls",
+        items: [
+          { name: "Dragon Roll", description: "Shrimp tempura, eel, avocado", price: "$16", image: "/images/dishes/dragonroll.jpg" },
+          { name: "California Roll", description: "Crab, avocado, cucumber", price: "$12", image: "/images/dishes/californiaroll.jpg" },
+          { name: "Spicy Tuna Roll", description: "Tuna with spicy mayo", price: "$13", image: "/images/dishes/spicytuna.jpg" }
+        ]
+      },
+      {
+        category: "Sashimi",
+        items: [
+          { name: "Sashimi Platter", description: "Assorted sliced raw fish", price: "$22", image: "/images/dishes/sashimi.jpg" },
+          { name: "Salmon Sashimi", description: "Fresh sliced salmon", price: "$18", image: "/images/dishes/salmon.jpg" },
+          { name: "Tuna Sashimi", description: "Premium tuna cuts", price: "$19", image: "/images/dishes/tunasashimi.jpg" }
+        ]
+      },
+      {
+        category: "Soups",
+        items: [
+          { name: "Miso Soup", description: "Soybean paste soup with tofu", price: "$4", image: "/images/dishes/miso.jpg" },
+          { name: "Clear Soup", description: "Light broth with mushrooms", price: "$4", image: "/images/dishes/clearsoup.jpg" },
+          { name: "Udon Soup", description: "Thick wheat noodles in broth", price: "$9", image: "/images/dishes/udon.jpg" }
+        ]
+      }
+    ]
+  },
+  {
+    _id: "mock-r5",
+    name: "Golden Dragon",
+    cuisine: "Chinese",
+    priceRange: "$$",
+    rating: 4.2,
+    address: "222 Chinatown St, East Side",
+    phone: "555-567-8901",
+    website: "www.goldendragon.com",
+    openHours: "11:00 AM - 12:00 AM",
+    image: "/images/restaurants/res-5.jpg",
+    menu: [
+      {
+        category: "Appetizers",
+        items: [
+          { name: "Spring Rolls", description: "Crispy vegetable rolls", price: "$6", image: "/images/dishes/springrolls.jpg" },
+          { name: "Crab Rangoon", description: "Fried wontons with cream cheese", price: "$7", image: "/images/dishes/crabrangoon.jpg" },
+          { name: "Scallion Pancakes", description: "Pan-fried Chinese flatbread", price: "$5", image: "/images/dishes/scallionpancake.jpg" }
+        ]
+      },
+      {
+        category: "Main Course",
+        items: [
+          { name: "Kung Pao Chicken", description: "Spicy stir-fried chicken", price: "$13", image: "/images/dishes/kungpao.jpg" },
+          { name: "Peking Duck", description: "Roast duck with pancakes", price: "$20", image: "/images/dishes/pekingduck.jpg" },
+          { name: "Beef and Broccoli", description: "Stir-fried beef with broccoli", price: "$14", image: "/images/dishes/beefbroccoli.jpg" }
+        ]
+      },
+      {
+        category: "Dim Sum",
+        items: [
+          { name: "Shumai", description: "Steamed pork dumplings", price: "$9", image: "/images/dishes/shumai.jpg" },
+          { name: "Har Gow", description: "Shrimp dumplings", price: "$10", image: "/images/dishes/hargow.jpg" },
+          { name: "Char Siu Bao", description: "BBQ pork buns", price: "$8", image: "/images/dishes/charsiu.jpg" }
         ]
       }
     ]
