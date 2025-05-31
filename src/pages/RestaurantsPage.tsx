@@ -195,25 +195,25 @@ const RestaurantsPage = () => {
       {
         category: "Appetizers",
         items: [
-          { name: "Spring Rolls", description: "Crispy vegetable rolls", price: "$6", image: "/images/dishes/springrolls.jpg" },
-          { name: "Crab Rangoon", description: "Fried wontons with cream cheese", price: "$7", image: "/images/dishes/crabrangoon.jpg" },
-          { name: "Scallion Pancakes", description: "Pan-fried Chinese flatbread", price: "$5", image: "/images/dishes/scallionpancake.jpg" }
+          { name: "Spring Rolls", description: "Crispy vegetable rolls", price: "$6", image: "/images/restaurants/menu-r5/springroll.jpg" },
+          { name: "Crab Rangoon", description: "Fried wontons with cream cheese", price: "$7", image: "/images/restaurants/menu-r5/crabrangoon.jpg" },
+          { name: "Scallion Pancakes", description: "Pan-fried Chinese flatbread", price: "$5", image: "/images/restaurants/menu-r5/scallionpancakes.jpg" }
         ]
       },
       {
         category: "Main Course",
         items: [
-          { name: "Kung Pao Chicken", description: "Spicy stir-fried chicken", price: "$13", image: "/images/dishes/kungpao.jpg" },
-          { name: "Peking Duck", description: "Roast duck with pancakes", price: "$20", image: "/images/dishes/pekingduck.jpg" },
-          { name: "Beef and Broccoli", description: "Stir-fried beef with broccoli", price: "$14", image: "/images/dishes/beefbroccoli.jpg" }
+          { name: "Kung Pao Chicken", description: "Spicy stir-fried chicken", price: "$13", image: "/images/restaurants/menu-r5/kungpaochicken.jpg" },
+          { name: "Peking Duck", description: "Roast duck with pancakes", price: "$20", image: "/images/restaurants/menu-r5/pekingduck.jpg" },
+          { name: "Beef and Broccoli", description: "Stir-fried beef with broccoli", price: "$14", image: "/images/restaurants/menu-r5/beefbroccoli.jpg" }
         ]
       },
       {
         category: "Dim Sum",
         items: [
-          { name: "Shumai", description: "Steamed pork dumplings", price: "$9", image: "/images/dishes/shumai.jpg" },
-          { name: "Har Gow", description: "Shrimp dumplings", price: "$10", image: "/images/dishes/hargow.jpg" },
-          { name: "Char Siu Bao", description: "BBQ pork buns", price: "$8", image: "/images/dishes/charsiu.jpg" }
+          { name: "Shumai", description: "Steamed pork dumplings", price: "$9", image: "/images/restaurants/menu-r5/shumai.jpg" },
+          { name: "Har Gow", description: "Shrimp dumplings", price: "$10", image: "/images/restaurants/menu-r5/hargow.jpg" },
+          { name: "Char Siu Bao", description: "BBQ pork buns", price: "$8", image: "/images/restaurants/menu-r5/charsiubao.jpg" }
         ]
       }
     ]
