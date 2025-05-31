@@ -157,25 +157,25 @@ const RestaurantsPage = () => {
       {
         category: "Rolls",
         items: [
-          { name: "Dragon Roll", description: "Shrimp tempura, eel, avocado", price: "$16", image: "/images/dishes/dragonroll.jpg" },
-          { name: "California Roll", description: "Crab, avocado, cucumber", price: "$12", image: "/images/dishes/californiaroll.jpg" },
-          { name: "Spicy Tuna Roll", description: "Tuna with spicy mayo", price: "$13", image: "/images/dishes/spicytuna.jpg" }
+          { name: "Dragon Roll", description: "Shrimp tempura, eel, avocado", price: "$16", image: "/images/restaurants/menu-r4/dragonroll.jpg" },
+          { name: "California Roll", description: "Crab, avocado, cucumber", price: "$12", image: "/images/restaurants/menu-r4/californiaroll.jpg" },
+          { name: "Spicy Tuna Roll", description: "Tuna with spicy mayo", price: "$13", image: "/images/restaurants/menu-r4/spicytunaroll.jpg" }
         ]
       },
       {
         category: "Sashimi",
         items: [
-          { name: "Sashimi Platter", description: "Assorted sliced raw fish", price: "$22", image: "/images/dishes/sashimi.jpg" },
-          { name: "Salmon Sashimi", description: "Fresh sliced salmon", price: "$18", image: "/images/dishes/salmon.jpg" },
-          { name: "Tuna Sashimi", description: "Premium tuna cuts", price: "$19", image: "/images/dishes/tunasashimi.jpg" }
+          { name: "Sashimi Platter", description: "Assorted sliced raw fish", price: "$22", image: "/images/restaurants/menu-r4/sashimi.jpg" },
+          { name: "Salmon Sashimi", description: "Fresh sliced salmon", price: "$18", image: "/images/restaurants/menu-r4/salmon.jpg" },
+          { name: "Tuna Sashimi", description: "Premium tuna cuts", price: "$19", image: "/images/restaurants/menu-r4/tunasashimi.jpg" }
         ]
       },
       {
         category: "Soups",
         items: [
-          { name: "Miso Soup", description: "Soybean paste soup with tofu", price: "$4", image: "/images/dishes/miso.jpg" },
-          { name: "Clear Soup", description: "Light broth with mushrooms", price: "$4", image: "/images/dishes/clearsoup.jpg" },
-          { name: "Udon Soup", description: "Thick wheat noodles in broth", price: "$9", image: "/images/dishes/udon.jpg" }
+          { name: "Miso Soup", description: "Soybean paste soup with tofu", price: "$4", image: "/images/restaurants/menu-r4/miso.jpg" },
+          { name: "Clear Soup", description: "Light broth with mushrooms", price: "$4", image: "/images/restaurants/menu-r4/clearsoup.jpg" },
+          { name: "Udon Soup", description: "Thick wheat noodles in broth", price: "$9", image: "/images/restaurants/menu-r4/udonsoup.jpg" }
         ]
       }
     ]
