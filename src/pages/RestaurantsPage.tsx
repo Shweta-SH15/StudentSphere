@@ -119,25 +119,25 @@ const RestaurantsPage = () => {
       {
         category: "Tacos",
         items: [
-          { name: "Tacos al Pastor", description: "Spit-grilled pork with pineapple", price: "$9", image: "/images/dishes/alpastor.jpg" },
-          { name: "Fish Tacos", description: "Grilled fish with lime crema", price: "$10", image: "/images/dishes/fishtacos.jpg" },
-          { name: "Carnitas Tacos", description: "Slow-cooked pork with onions", price: "$9", image: "/images/dishes/carnitas.jpg" }
+          { name: "Tacos al Pastor", description: "Spit-grilled pork with pineapple", price: "$9", image: "/images/restaurants/menu-r3/alpastor.jpg" },
+          { name: "Fish Tacos", description: "Grilled fish with lime crema", price: "$10", image: "/images/restaurants/menu-r3/fishtacos.jpg" },
+          { name: "Carnitas Tacos", description: "Slow-cooked pork with onions", price: "$9", image: "/images/restaurants/menu-r3/carnitas.jpg" }
         ]
       },
       {
         category: "Sides",
         items: [
-          { name: "Guacamole", description: "Fresh avocado dip", price: "$5", image: "/images/dishes/guacamole.jpg" },
-          { name: "Elote", description: "Mexican street corn", price: "$4", image: "/images/dishes/elote.jpg" },
-          { name: "Nachos", description: "Tortilla chips with cheese and jalapeños", price: "$7", image: "/images/dishes/nachos.jpg" }
+          { name: "Guacamole", description: "Fresh avocado dip", price: "$5", image: "/images/restaurants/menu-r3/guacamole.jpg" },
+          { name: "Elote", description: "Mexican street corn", price: "$4", image: "/images/restaurants/menu-r3/eloteguacamole.jpg" },
+          { name: "Nachos", description: "Tortilla chips with cheese and jalapeños", price: "$7", image: "/images/restaurants/menu-r3/nachos.jpg" }
         ]
       },
       {
         category: "Desserts",
         items: [
-          { name: "Churros", description: "Fried dough with cinnamon sugar", price: "$4", image: "/images/dishes/churros.jpg" },
-          { name: "Flan", description: "Caramel custard dessert", price: "$5", image: "/images/dishes/flan.jpg" },
-          { name: "Tres Leches Cake", description: "Sponge cake soaked in milk", price: "$6", image: "/images/dishes/tresleches.jpg" }
+          { name: "Churros", description: "Fried dough with cinnamon sugar", price: "$4", image: "/images/restaurants/menu-r3/churros.jpg" },
+          { name: "Flan", description: "Caramel custard dessert", price: "$5", image: "/images/restaurants/menu-r3/flan.jpg" },
+          { name: "Tres Leches Cake", description: "Sponge cake soaked in milk", price: "$6", image: "/images/restaurants/menu-r3/treslechescake.jpg" }
         ]
       }
     ]
