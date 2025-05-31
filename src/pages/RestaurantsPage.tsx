@@ -82,22 +82,22 @@ const RestaurantsPage = () => {
         category: "Starters",
         items: [
           { name: "Samosa", description: "Deep-fried pastry with spiced potatoes", price: "$5", image: "/images/restaurants/menu-r2/samosa.jpg" },
-          { name: "Paneer Pakora", description: "Battered and fried cottage cheese", price: "$6", image: "/images/restaurants/menu-r2/pakora.jpg" },
-          { name: "Chicken Tikka", description: "Spiced grilled chicken skewers", price: "$8", image: "/images/restaurants/menu-r2/chickenTikka.jpg" }
+          { name: "Paneer Pakora", description: "Battered and fried cottage cheese", price: "$6", image: "/images/restaurants/menu-r2/paneerpakora.jpg" },
+          { name: "Chicken Tikka", description: "Spiced grilled chicken skewers", price: "$8", image: "/images/restaurants/menu-r2/chickentikka.jpg" }
         ]
       },
       {
         category: "Main Course",
         items: [
           { name: "Butter Chicken", description: "Creamy tomato-based chicken curry", price: "$15", image: "/images/restaurants/menu-r2/butterchicken.jpg" },
-          { name: "Paneer Tikka Masala", description: "Grilled paneer in spiced gravy", price: "$14", image: "/images/restaurants/menu-r2/paneer.jpg" },
-          { name: "Lamb Rogan Josh", description: "Slow-cooked lamb in curry", price: "$17", image: "/images/restaurants/menu-r2/roganjosh.jpg" }
+          { name: "Paneer Tikka Masala", description: "Grilled paneer in spiced gravy", price: "$14", image: "/images/restaurants/menu-r2/paneertikkamasala.jpg" },
+          { name: "Lamb Rogan Josh", description: "Slow-cooked lamb in curry", price: "$17", image: "/images/restaurants/menu-r2/lambroganjosh.jpg" }
         ]
       },
       {
         category: "Sides",
         items: [
-          { name: "Garlic Naan", description: "Fluffy bread with garlic", price: "$3", image: "/images/restaurants/menu-r2/naan.jpg" },
+          { name: "Garlic Naan", description: "Fluffy bread with garlic", price: "$3", image: "/images/restaurants/menu-r2/garlicnaan.jpg" },
           { name: "Vegetable Biryani", description: "Aromatic rice with mixed vegetables", price: "$12", image: "/images/restaurants/menu-r2/biryani.jpg" },
           { name: "Raita", description: "Yogurt with cucumber and spices", price: "$2", image: "/images/restaurants/menu-r2/raita.jpg" }
         ]
