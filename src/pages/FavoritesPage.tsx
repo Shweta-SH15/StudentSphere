@@ -58,17 +58,28 @@ const FavoritesPage = () => {
     loadFavorites();
   }, [isAuthenticated]);
 
-  const renderCard = (item, type) => (
+  const renderCard = (item, type) => {
+  // Fix image rendering logic
+  const rawImage = item.profileImage || item.image || "/uploads/default.png";
+  const imageUrl = rawImage.startsWith("/uploads/")
+    ? `${SOCKET_URL}${rawImage}`
+    : rawImage;
+
+  return (
     <Card key={item._id} className="bg-[#121826] text-white overflow-hidden shadow-md">
       <div className="h-36 overflow-hidden">
         <img
-          src={`${SOCKET_URL}${item.profileImage || item.image || "/uploads/default.png"}`}
+          src={imageUrl}
           alt={item.name || item.title}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = "/uploads/default.png";
+          }}
         />
       </div>
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-1">{item.name || item.title}</h3>
+
         {type === "friend" && (
           <div className="flex flex-wrap gap-2 mt-1">
             <Badge variant="outline">{item.nationality}</Badge>
@@ -77,27 +88,31 @@ const FavoritesPage = () => {
             ))}
           </div>
         )}
+
         {type === "roommate" && (
           <>
             <p className="text-sm text-gray-400">Age: {item.age}</p>
             <p className="text-sm text-gray-400">Gender: {item.gender}</p>
           </>
         )}
+
         {type === "accommodation" && (
           <>
             <p className="text-sm text-gray-400">{item.location}</p>
             <p className="text-sm text-gray-400">{item.price || item.priceRange}</p>
           </>
         )}
+
         {type === "restaurant" && (
           <>
-            <p className="text-sm text-gray-400">{item.cuisine || item.cuisineType?.join(", ")}</p>
+            <p className="text-sm text-gray-400">{item.cuisine || (item.cuisineType || []).join(", ")}</p>
             <p className="text-sm text-gray-500">{item.address}</p>
           </>
         )}
       </CardContent>
     </Card>
   );
+};
 
   return (
     <div className="min-h-screen bg-[#0a0f1a] py-10 px-4 text-white">
