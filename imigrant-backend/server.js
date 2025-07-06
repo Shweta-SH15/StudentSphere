@@ -106,7 +106,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require('socket.io');
 const admin = require("./middleware/firebaseAdmin");
-const Chat = require('./models/ChatPage');
+const Chat = require('./models/Message');
 
 dotenv.config();
 
