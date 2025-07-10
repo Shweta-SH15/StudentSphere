@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getAuth } from "firebase/auth";
-
+import getAvatarUrl from "@/lib/getAvatarUrl";
 const lifestyleOptions = ["Non-smoker", "Early Riser", "Night Owl", "Pet Lover", "Clean"];
 const interestOptions = ["Sports", "Music", "Travel", "Food", "Movies"];
 const genderOptions = ["Male", "Female", "Other", "Prefer not to say"];
