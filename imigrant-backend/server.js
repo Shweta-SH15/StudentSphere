@@ -171,6 +171,10 @@ io.on('connection', (socket) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.send('✅ StudentSphere backend is live');
+});
+
 // ===== Middleware =====
 app.use(cors());
 app.use(express.json());

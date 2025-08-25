@@ -39,7 +39,11 @@ const UserSchema = new mongoose.Schema({
   interest: [String],
   language: [String],
   bio: String,
-  gender: String,
+  gender: {
+    String,
+    enum: ["Male", "Female", "Other"],
+    default: "Other"
+  },
   age: Number,
   lifestyle: [String],
   propertyType: String,

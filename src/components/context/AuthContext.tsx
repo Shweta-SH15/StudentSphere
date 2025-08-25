@@ -138,7 +138,7 @@
 // };
 
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+`import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from "@/components/ui/sonner";
 
 // User type with avatarConfig
@@ -262,7 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         loading,
-        token,
+        token,  
         login,
         signup,
         logout,
@@ -284,3 +284,4 @@ export const useAuth = () => {
   }
   return context;
 };
+`
