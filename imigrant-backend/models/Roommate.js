@@ -7,6 +7,11 @@ const RoommateSchema = new mongoose.Schema({
     lifestyle: String,
     location: String,
     budgetRange: String,
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'other'],
+        required: true
+    },
     profileImage: String, // Optional profile image
 }, { timestamps: true });
 
