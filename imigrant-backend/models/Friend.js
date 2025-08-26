@@ -5,11 +5,6 @@ const FriendSchema = new mongoose.Schema({
     nationality: String,
     interests: [String],
     languages: [String],
-    gender: {
-        type: String,
-        enum: ['male', 'female','other'],
-        required :  true,
-    },
     profileImage: String, // Optional profile image
 }, { timestamps: true });
 

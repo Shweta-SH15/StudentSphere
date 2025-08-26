@@ -7,20 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthModal from "@/components/Auth/AuthModal";
 import { toast } from "@/components/ui/sonner";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, SOCKET_URL } from "@/lib/api";
 import { getAuth, getIdToken } from "firebase/auth";
 
-// Default avatars
-const maleAvatar = "/images/male.jpg";
-const femaleAvatar = "/images/female.jpg";
-const otherAvatar = "/images/other.jpg";
-
-// Helper: return correct image based on gender
-const getProfileImage = (roommate) => {
-  if (roommate.gender?.toLowerCase() === "male") return maleAvatar;
-  if (roommate.gender?.toLowerCase() === "female") return femaleAvatar;
-  return otherAvatar;
+const getImageUrl = (path: string) => {
+  if (!path) return "/uploads/default.png";
+  if (path.startsWith("/images")) return path; // from public folder
+  return `${SOCKET_URL}${path}`; // uploaded from database
 };
+
 
 type Roommate = {
   _id: string;
@@ -30,6 +25,7 @@ type Roommate = {
   occupation?: string;
   budget?: string;
   moveInDate?: string;
+  profileImage?: string;
   bio?: string;
   lifestyle?: string[];
   interests?: string[];
@@ -45,6 +41,7 @@ const mockRoommates: Roommate[] = [
     budget: "$900",
     moveInDate: "2024-09-01",
     bio: "CS student who enjoys calm nights and clean shared spaces.",
+    profileImage: "/images/User_1.jpg",
     lifestyle: ["Non-smoker", "Early Riser", "Clean"],
     interests: ["Basketball", "Gaming", "Coding"],
   },
@@ -57,6 +54,7 @@ const mockRoommates: Roommate[] = [
     budget: "$850",
     moveInDate: "2024-08-15",
     bio: "Love music, cooking, and traveling. Looking for a chill roommate.",
+    profileImage: "/images/User_5.jpg",
     lifestyle: ["Pet Lover", "Clean"],
     interests: ["Music", "Cooking", "Travel"],
   },
@@ -69,6 +67,7 @@ const mockRoommates: Roommate[] = [
     budget: "$1000",
     moveInDate: "2024-07-01",
     bio: "Quiet and respectful. Prefer tidy shared spaces.",
+    profileImage: "/images/User_2.jpg",
     lifestyle: ["Non-smoker", "Night Owl"],
     interests: ["Cricket", "Finance", "Movies"],
   },
@@ -81,6 +80,7 @@ const mockRoommates: Roommate[] = [
     budget: "$950",
     moveInDate: "2024-10-01",
     bio: "Professional looking for a responsible roommate.",
+    profileImage: "/images/User_4.jpg",
     lifestyle: ["Early Riser", "Non-smoker", "Clean"],
     interests: ["Reading", "Yoga", "Volunteering"],
   },
@@ -93,6 +93,7 @@ const mockRoommates: Roommate[] = [
     budget: "$800",
     moveInDate: "2024-06-15",
     bio: "Intern at a startup, love quiet evenings and coffee.",
+    profileImage: "/images/User_3.jpg",
     lifestyle: ["Clean", "Night Owl"],
     interests: ["Startups", "Gaming", "Skiing"],
   },
@@ -260,7 +261,7 @@ const RoommatesPage = () => {
             {currentRoommate ? (
               <SwipeCard
                 id={currentRoommate._id}
-                image={getProfileImage(currentRoommate)}
+                image={getImageUrl(currentRoommate.profileImage || "/uploads/default.png")}
                 title={currentRoommate.name}
                 subtitle={`${currentRoommate.age} • ${currentRoommate.gender}`}
                 details={
@@ -288,7 +289,7 @@ const RoommatesPage = () => {
                 {likedRoommates.map((roommate) => (
                   <div key={roommate._id} className="bg-[#1f2937] text-white p-4 rounded-lg shadow flex">
                     <img
-                      src={getProfileImage(roommate)}
+                      src={getImageUrl(roommate.profileImage || "/uploads/default.png")}
                       alt={roommate.name}
                       className="w-16 h-16 rounded-full mr-4 object-cover"
                     />
