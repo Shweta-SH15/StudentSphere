@@ -19,184 +19,182 @@ const otherAvatar = "/images/other.jpg";
 const FriendsPage = () => {
   const { isAuthenticated } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [likedFriends, setLikedFriends] = useState([]);
-  const [allFriends, setAllFriends] = useState([]);
-  const [filteredFriends, setFilteredFriends] = useState([]);
+  const [likedFriends, setLikedFriends] = useState<any[]>([]);
+  const [allFriends, setAllFriends] = useState<any[]>([]);
+  const [filteredFriends, setFilteredFriends] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
-  const [swipeHistory, setSwipeHistory] = useState({});
+  const [swipeHistory, setSwipeHistory] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
-  // Mock data (now includes gender) — total 15 profiles
-const mockFriends = [
-  {
-    _id: "mock-f1",
-    name: "Alex Chen",
-    age: 22,
-    nationality: "China",
-    university: "University of Toronto",
-    interest: ["Photography", "Basketball", "Coding"],
-    language: ["Mandarin", "English"],
-    bio: "Computer Science student looking to make international friends and practice my English.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f2",
-    name: "Laura García",
-    age: 20,
-    nationality: "Spain",
-    university: "McGill University",
-    interest: ["Music", "Hiking", "Politics"],
-    language: ["Spanish", "English", "French"],
-    bio: "International Relations student who loves exploring the city and going to live music events.",
-    gender: "female",
-  },
-  {
-    _id: "mock-f3",
-    name: "Raj Patel",
-    age: 24,
-    nationality: "India",
-    university: "University of British Columbia",
-    interest: ["Cricket", "Cooking", "Startups"],
-    language: ["Hindi", "English"],
-    bio: "MBA student with a passion for entrepreneurship and connecting people.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f4",
-    name: "Emma Wilson",
-    age: 21,
-    nationality: "Australia",
-    university: "Queen's University",
-    interest: ["Swimming", "Travel", "Art"],
-    language: ["English"],
-    bio: "Fine Arts student looking for friends to explore galleries and museums with.",
-    gender: "female",
-  },
-  {
-    _id: "mock-f5",
-    name: "Omar Hassan",
-    age: 23,
-    nationality: "Egypt",
-    university: "York University",
-    interest: ["Soccer", "History", "Film"],
-    language: ["Arabic", "English"],
-    bio: "Film studies major hoping to find friends with similar interests in cinema and culture.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f6",
-    name: "Sophia Müller",
-    age: 22,
-    nationality: "Germany",
-    university: "University of Waterloo",
-    interest: ["Tech", "Travel", "Photography"],
-    language: ["German", "English"],
-    bio: "Engineering student exploring Canada and technology trends.",
-    gender: "female",
-  },
-  {
-    _id: "mock-f7",
-    name: "Daniel Kim",
-    age: 21,
-    nationality: "Korea",
-    university: "University of Toronto",
-    interest: ["Gaming", "Coding", "Music"],
-    language: ["Korean", "English"],
-    bio: "Gamer and coder looking to meet international friends.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f8",
-    name: "Fatima Ali",
-    age: 23,
-    nationality: "Pakistan",
-    university: "York University",
-    interest: ["Cooking", "Travel", "Reading"],
-    language: ["Urdu", "English"],
-    bio: "Love food and adventures, always up for new experiences.",
-    gender: "female",
-  },
-  {
-    _id: "mock-f9",
-    name: "Lucas Silva",
-    age: 24,
-    nationality: "Brazil",
-    university: "McMaster University",
-    interest: ["Soccer", "Music", "Hiking"],
-    language: ["Portuguese", "English"],
-    bio: "Soccer and music fan, looking to meet fellow students.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f10",
-    name: "Aisha Mohammed",
-    age: 22,
-    nationality: "UAE",
-    university: "University of Waterloo",
-    interest: ["Fashion", "Art", "Photography"],
-    language: ["Arabic", "English"],
-    bio: "Art lover and fashion enthusiast eager to connect with friends.",
-    gender: "female",
-  },
-  // 10 new friends
-  {
-    _id: "mock-f11",
-    name: "Mateo Rossi",
-    age: 23,
-    nationality: "Italy",
-    university: "University of Milan",
-    interest: ["Cooking", "Travel", "Soccer"],
-    language: ["Italian", "English"],
-    bio: "Foodie and traveler, loves meeting new people.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f12",
-    name: "Elena Petrova",
-    age: 21,
-    nationality: "Russia",
-    university: "Lomonosov Moscow State University",
-    interest: ["Art", "Music", "Photography"],
-    language: ["Russian", "English"],
-    bio: "Art student seeking friends who enjoy creative activities.",
-    gender: "female",
-  },
-  {
-    _id: "mock-f13",
-    name: "Mohammed Khan",
-    age: 24,
-    nationality: "Pakistan",
-    university: "Lahore University",
-    interest: ["Cricket", "Technology", "Reading"],
-    language: ["Urdu", "English"],
-    bio: "Tech enthusiast and cricket fan looking for like-minded friends.",
-    gender: "male",
-  },
-  {
-    _id: "mock-f14",
-    name: "Hannah Lee",
-    age: 22,
-    nationality: "USA",
-    university: "Harvard University",
-    interest: ["Debate", "Politics", "Travel"],
-    language: ["English"],
-    bio: "Debate club member looking to expand my social circle internationally.",
-    gender: "female",
-  },
-  {
-    _id: "mock-f15",
-    name: "Tariq Al-Farsi",
-    age: 23,
-    nationality: "Oman",
-    university: "Sultan Qaboos University",
-    interest: ["Football", "History", "Music"],
-    language: ["Arabic", "English"],
-    bio: "History student and football fan, eager to meet new friends.",
-    gender: "male",
-  }
-];
-
+  const mockFriends = [
+    {
+      _id: "mock-f1",
+      name: "Alex Chen",
+      age: 22,
+      nationality: "China",
+      university: "University of Toronto",
+      interest: ["Photography", "Basketball", "Coding"],
+      language: ["Mandarin", "English"],
+      bio: "Computer Science student looking to make international friends and practice my English.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f2",
+      name: "Laura García",
+      age: 20,
+      nationality: "Spain",
+      university: "McGill University",
+      interest: ["Music", "Hiking", "Politics"],
+      language: ["Spanish", "English", "French"],
+      bio: "International Relations student who loves exploring the city and going to live music events.",
+      gender: "female",
+    },
+    {
+      _id: "mock-f3",
+      name: "Raj Patel",
+      age: 24,
+      nationality: "India",
+      university: "University of British Columbia",
+      interest: ["Cricket", "Cooking", "Startups"],
+      language: ["Hindi", "English"],
+      bio: "MBA student with a passion for entrepreneurship and connecting people.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f4",
+      name: "Emma Wilson",
+      age: 21,
+      nationality: "Australia",
+      university: "Queen's University",
+      interest: ["Swimming", "Travel", "Art"],
+      language: ["English"],
+      bio: "Fine Arts student looking for friends to explore galleries and museums with.",
+      gender: "female",
+    },
+    {
+      _id: "mock-f5",
+      name: "Omar Hassan",
+      age: 23,
+      nationality: "Egypt",
+      university: "York University",
+      interest: ["Soccer", "History", "Film"],
+      language: ["Arabic", "English"],
+      bio: "Film studies major hoping to find friends with similar interests in cinema and culture.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f6",
+      name: "Sophia Müller",
+      age: 22,
+      nationality: "Germany",
+      university: "University of Waterloo",
+      interest: ["Tech", "Travel", "Photography"],
+      language: ["German", "English"],
+      bio: "Engineering student exploring Canada and technology trends.",
+      gender: "female",
+    },
+    {
+      _id: "mock-f7",
+      name: "Daniel Kim",
+      age: 21,
+      nationality: "Korea",
+      university: "University of Toronto",
+      interest: ["Gaming", "Coding", "Music"],
+      language: ["Korean", "English"],
+      bio: "Gamer and coder looking to meet international friends.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f8",
+      name: "Fatima Ali",
+      age: 23,
+      nationality: "Pakistan",
+      university: "York University",
+      interest: ["Cooking", "Travel", "Reading"],
+      language: ["Urdu", "English"],
+      bio: "Love food and adventures, always up for new experiences.",
+      gender: "female",
+    },
+    {
+      _id: "mock-f9",
+      name: "Lucas Silva",
+      age: 24,
+      nationality: "Brazil",
+      university: "McMaster University",
+      interest: ["Soccer", "Music", "Hiking"],
+      language: ["Portuguese", "English"],
+      bio: "Soccer and music fan, looking to meet fellow students.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f10",
+      name: "Aisha Mohammed",
+      age: 22,
+      nationality: "UAE",
+      university: "University of Waterloo",
+      interest: ["Fashion", "Art", "Photography"],
+      language: ["Arabic", "English"],
+      bio: "Art lover and fashion enthusiast eager to connect with friends.",
+      gender: "female",
+    },
+    // 10 new friends
+    {
+      _id: "mock-f11",
+      name: "Mateo Rossi",
+      age: 23,
+      nationality: "Italy",
+      university: "University of Milan",
+      interest: ["Cooking", "Travel", "Soccer"],
+      language: ["Italian", "English"],
+      bio: "Foodie and traveler, loves meeting new people.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f12",
+      name: "Elena Petrova",
+      age: 21,
+      nationality: "Russia",
+      university: "Lomonosov Moscow State University",
+      interest: ["Art", "Music", "Photography"],
+      language: ["Russian", "English"],
+      bio: "Art student seeking friends who enjoy creative activities.",
+      gender: "female",
+    },
+    {
+      _id: "mock-f13",
+      name: "Mohammed Khan",
+      age: 24,
+      nationality: "Pakistan",
+      university: "Lahore University",
+      interest: ["Cricket", "Technology", "Reading"],
+      language: ["Urdu", "English"],
+      bio: "Tech enthusiast and cricket fan looking for like-minded friends.",
+      gender: "male",
+    },
+    {
+      _id: "mock-f14",
+      name: "Hannah Lee",
+      age: 22,
+      nationality: "USA",
+      university: "Harvard University",
+      interest: ["Debate", "Politics", "Travel"],
+      language: ["English"],
+      bio: "Debate club member looking to expand my social circle internationally.",
+      gender: "female",
+    },
+    {
+      _id: "mock-f15",
+      name: "Tariq Al-Farsi",
+      age: 23,
+      nationality: "Oman",
+      university: "Sultan Qaboos University",
+      interest: ["Football", "History", "Music"],
+      language: ["Arabic", "English"],
+      bio: "History student and football fan, eager to meet new friends.",
+      gender: "male",
+    }
+  ];
 
   const filterOptions = [
     { id: "nationality", name: "Nationality", values: ["China", "Spain", "India", "Australia", "Egypt"] },
@@ -204,14 +202,14 @@ const mockFriends = [
     { id: "language", name: "Language", values: ["English", "Mandarin", "Spanish", "Hindi", "Arabic", "French"] }
   ];
 
-  const getProfileImage = (friend) => {
+  const getProfileImage = (friend: any) => {
     if (friend.gender === "male") return maleAvatar;
     if (friend.gender === "female") return femaleAvatar;
     return otherAvatar;
   };
 
   // Filter out liked friends only
-  const getDiscoverFriends = (friends) => {
+  const getDiscoverFriends = (friends: any[]) => {
     return friends.filter(f => !likedFriends.find(l => l._id === f._id));
   };
 
@@ -251,12 +249,12 @@ const mockFriends = [
     fetchLiked();
   }, [isAuthenticated]);
 
-  const saveLikedToStorage = (list) => {
+  const saveLikedToStorage = (list: any[]) => {
     setLikedFriends(list);
     localStorage.setItem("likedFriends", JSON.stringify(list));
   };
 
-  const handleFilterChange = (filterId, value) => {
+  const handleFilterChange = (filterId: string, value: string) => {
     let filtered = allFriends;
     if (value) {
       filtered = filtered.filter(friend => {
@@ -270,7 +268,7 @@ const mockFriends = [
     setCurrentIndex(0);
   };
 
-  const handleLike = async (id) => {
+  const handleLike = async (id: string) => {
     const friend = allFriends.find(f => f._id === id);
     if (!friend || likedFriends.find(f => f._id === id)) return;
 
@@ -293,7 +291,10 @@ const mockFriends = [
 
         await fetch(`${API_BASE}/swipe/friend`, {
           method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
           body: JSON.stringify({ friendId: id })
         });
 
@@ -304,21 +305,20 @@ const mockFriends = [
       }
     }
 
-    // Remove liked friend from filtered list
-    setFilteredFriends(prev => getDiscoverFriends(prev));
-    setCurrentIndex(0);
+    setFilteredFriends(getDiscoverFriends(allFriends));
+    setCurrentIndex(prev => (prev + 1) % Math.max(1, getDiscoverFriends(allFriends).length));
   };
 
-  const handleDislike = (id) => {
+  const handleDislike = (id: string) => {
     setSwipeHistory(prev => {
       const updated = { ...prev, [id]: "dislike" };
       localStorage.setItem("swipeHistory", JSON.stringify(updated));
       return updated;
     });
-    setCurrentIndex(prev => prev + 1);
+    setCurrentIndex(prev => (prev + 1) % Math.max(1, filteredFriends.length));
   };
 
-  const handleUnlike = async (id) => {
+  const handleUnlike = async (id: string) => {
     const updated = likedFriends.filter(f => f._id !== id);
     saveLikedToStorage(updated);
 
@@ -338,7 +338,9 @@ const mockFriends = [
     }
   };
 
-  const current = filteredFriends[currentIndex];
+  const current = filteredFriends.length > 0
+    ? filteredFriends[currentIndex % filteredFriends.length]
+    : null;
 
   return (
     <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
@@ -352,7 +354,7 @@ const mockFriends = [
 
           <TabsContent value="discover">
             <FilterBar options={filterOptions} onFilterChange={handleFilterChange} />
-            {filteredFriends.length > 0 && current ? (
+            {current && (
               <SwipeCard
                 id={current._id}
                 image={getProfileImage(current)}
@@ -363,7 +365,7 @@ const mockFriends = [
                     <p className="text-sm text-gray-600">{current.university}</p>
                     <p className="text-sm">{current.bio}</p>
                     <div className="flex gap-2 flex-wrap mt-2">
-                      {current.interest?.map((tag, i) => (
+                      {current.interest?.map((tag: string, i: number) => (
                         <Badge key={i}>{tag}</Badge>
                       ))}
                     </div>
@@ -375,10 +377,6 @@ const mockFriends = [
                 onLike={() => handleLike(current._id)}
                 onDislike={() => handleDislike(current._id)}
               />
-            ) : (
-              <div className="text-center py-12 text-gray-400">
-                <p>No friends available for discovery.</p>
-              </div>
             )}
           </TabsContent>
 
