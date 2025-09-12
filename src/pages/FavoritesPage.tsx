@@ -15,48 +15,34 @@ const FavoritesPage = () => {
   const [restaurants, setRestaurants] = useState([]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+  if (!isAuthenticated) return;
 
-    const loadFavorites = async () => {
-      const token = await getIdToken(getAuth().currentUser, true);
+  const loadFavorites = async () => {
+    const token = await getIdToken(getAuth().currentUser, true);
 
-      try {
-        // Real likes from backend
-        const [fRes, rRes, aRes, restRes] = await Promise.all([
-          fetch(`${API_BASE}/profile/friends`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE}/profile/roommates`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE}/profile/accommodations`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API_BASE}/profile/restaurants`, { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
+    try {
+      const [fRes, rRes, aRes, restRes] = await Promise.all([
+        fetch(`${API_BASE}/profile/friends`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/profile/roommates`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/profile/accommodations`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/profile/restaurants`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
 
-        const [realFriends, realRoommates, realAccommodations, realRestaurants] = await Promise.all([
-          fRes.json(),
-          rRes.json(),
-          aRes.json(),
-          restRes.json()
-        ]);
+      const [realFriends, realRoommates, realAccommodations, realRestaurants] =
+        await Promise.all([fRes.json(), rRes.json(), aRes.json(), restRes.json()]);
 
-        // Mock likes from localStorage
-        const localFriends = JSON.parse(localStorage.getItem("likedFriends") || "[]");
-        const localRoommates = JSON.parse(localStorage.getItem("likedRoommates") || "[]");
-        const localAccommodations = JSON.parse(localStorage.getItem("likedAccommodations") || "[]");
-        const localRestaurants = JSON.parse(localStorage.getItem("likedRestaurants") || "[]");
+      setFriends(realFriends || []);
+      setRoommates(realRoommates || []);
+      setAccommodations(realAccommodations || []);
+      setRestaurants(realRestaurants || []);
+    } catch (err) {
+      console.error("Failed to fetch liked items:", err);
+      toast.error("Could not load all liked items");
+    }
+  };
 
-        // Combine backend + mock items
-        const combined = (real, mock) => [...real, ...mock.filter(m => m._id?.startsWith("mock-"))];
-
-        setFriends(combined(realFriends || [], localFriends));
-        setRoommates(combined(realRoommates || [], localRoommates));
-        setAccommodations(combined(realAccommodations || [], localAccommodations));
-        setRestaurants(combined(realRestaurants || [], localRestaurants));
-      } catch (err) {
-        console.error("Failed to fetch liked items:", err);
-        toast.error("Could not load all liked items");
-      }
-    };
-
-    loadFavorites();
-  }, [isAuthenticated]);
+  loadFavorites();
+}, [isAuthenticated]);
 
   const renderCard = (item, type) => {
   // Fix image rendering logic

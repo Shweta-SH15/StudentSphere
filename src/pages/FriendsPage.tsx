@@ -24,9 +24,9 @@ const FriendsPage = () => {
   const [filteredFriends, setFilteredFriends] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState("discover");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
-  const [swipeHistory, setSwipeHistory] = useState<Record<string, string>>({});
   const navigate = useNavigate();
 
+  // 🔹 Your mock users
   const mockFriends = [
     {
       _id: "mock-f1",
@@ -196,6 +196,7 @@ const FriendsPage = () => {
     }
   ];
 
+
   const filterOptions = [
     { id: "nationality", name: "Nationality", values: ["China", "Spain", "India", "Australia", "Egypt"] },
     { id: "interest", name: "Interest", values: ["Photography", "Music", "Sports", "Travel", "Cooking", "Art"] },
@@ -208,10 +209,9 @@ const FriendsPage = () => {
     return otherAvatar;
   };
 
-  // Filter out liked friends only
-  const getDiscoverFriends = (friends: any[]) => {
-    return friends.filter(f => !likedFriends.find(l => l._id === f._id));
-  };
+  // 🔹 Filter out already liked friends
+  const getDiscoverFriends = (friends: any[]) =>
+    friends.filter(f => !likedFriends.find(l => l._id === f._id));
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -219,40 +219,49 @@ const FriendsPage = () => {
       return;
     }
 
-    const token = localStorage.getItem('immigrantConnect_token');
-
     const fetchFriends = async () => {
       try {
+        const user = getAuth().currentUser;
+        const token = await getIdToken(user!, true);
+
+        // ✅ get backend users
         const res = await fetch(`${API_BASE}/profile/friend-suggestions`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await res.json();
-        const fallback = Array.isArray(data) && data.length ? data : mockFriends;
+        const dbFriends = await res.json();
 
-        setAllFriends(fallback);
-        setFilteredFriends(getDiscoverFriends(fallback));
-      } catch {
+        // ✅ merge mocks + DB
+        const merged = [...mockFriends, ...(Array.isArray(dbFriends) ? dbFriends : [])];
+        // remove duplicates
+        const unique = merged.filter((f, i, arr) => arr.findIndex(x => x._id === f._id) === i);
+
+        setAllFriends(unique);
+        setFilteredFriends(getDiscoverFriends(unique));
+      } catch (err) {
+        console.error(err);
         setAllFriends(mockFriends);
         setFilteredFriends(getDiscoverFriends(mockFriends));
       }
     };
 
     const fetchLiked = async () => {
-      const localLiked = JSON.parse(localStorage.getItem("likedFriends") || "[]");
-      setLikedFriends(localLiked);
+      try {
+        const user = getAuth().currentUser;
+        const token = await getIdToken(user!, true);
 
-      const localHistory = JSON.parse(localStorage.getItem("swipeHistory") || "{}");
-      setSwipeHistory(localHistory);
+        const res = await fetch(`${API_BASE}/profile/friends`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const liked = await res.json();
+        setLikedFriends(liked);
+      } catch (err) {
+        console.error("Failed to fetch liked friends", err);
+      }
     };
 
     fetchFriends();
     fetchLiked();
   }, [isAuthenticated]);
-
-  const saveLikedToStorage = (list: any[]) => {
-    setLikedFriends(list);
-    localStorage.setItem("likedFriends", JSON.stringify(list));
-  };
 
   const handleFilterChange = (filterId: string, value: string) => {
     let filtered = allFriends;
@@ -272,37 +281,23 @@ const FriendsPage = () => {
     const friend = allFriends.find(f => f._id === id);
     if (!friend || likedFriends.find(f => f._id === id)) return;
 
-    setSwipeHistory(prev => {
-      const updated = { ...prev, [id]: "like" };
-      localStorage.setItem("swipeHistory", JSON.stringify(updated));
-      return updated;
-    });
-
     const updatedLiked = [...likedFriends, friend];
-    saveLikedToStorage(updatedLiked);
+    setLikedFriends(updatedLiked);
 
-    const isMock = id.startsWith("mock-");
-    if (isMock) {
+    try {
+      const user = getAuth().currentUser;
+      const token = await getIdToken(user!, true);
+
+      await fetch(`${API_BASE}/swipe/friend`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ friendId: id })
+      });
+
       toast("Friend Liked!", { description: `You liked ${friend.name}` });
-    } else {
-      try {
-        const user = getAuth().currentUser;
-        const token = await getIdToken(user, true);
-
-        await fetch(`${API_BASE}/swipe/friend`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ friendId: id })
-        });
-
-        toast("Friend Liked!", { description: `You liked ${friend.name}` });
-      } catch (err) {
-        console.error(err);
-        toast.error("Could not like friend.");
-      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not like friend.");
     }
 
     setFilteredFriends(getDiscoverFriends(allFriends));
@@ -310,21 +305,16 @@ const FriendsPage = () => {
   };
 
   const handleDislike = (id: string) => {
-    setSwipeHistory(prev => {
-      const updated = { ...prev, [id]: "dislike" };
-      localStorage.setItem("swipeHistory", JSON.stringify(updated));
-      return updated;
-    });
     setCurrentIndex(prev => (prev + 1) % Math.max(1, filteredFriends.length));
   };
 
   const handleUnlike = async (id: string) => {
     const updated = likedFriends.filter(f => f._id !== id);
-    saveLikedToStorage(updated);
+    setLikedFriends(updated);
 
     try {
       const user = getAuth().currentUser;
-      const token = await getIdToken(user, true);
+      const token = await getIdToken(user!, true);
 
       await fetch(`${API_BASE}/swipe/unlike-friend`, {
         method: "POST",

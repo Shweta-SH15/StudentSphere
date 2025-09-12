@@ -30,6 +30,6 @@ router.get('/restaurants', getLikedRestaurants);
 
 router.post('/unlike-friend', unlikeFriend);
 router.post('/unlike-roommate',unlikeRoommate);
-router.post('/unlike-accomodation', unlikeAccommodation);
+router.post('/unlike-accommodation', unlikeAccommodation);
 router.post('/unlike-restaurant', unlikeRestaurant);
 module.exports = router;
