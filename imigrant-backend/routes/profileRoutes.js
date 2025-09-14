@@ -1,11 +1,14 @@
+// routes/profileRoutes.js
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const verifyFirebaseToken = require("../middleware/verifyFirebaseToken");
+const profileController = require("../controllers/profileController");
 
+// Protect all profile routes
 router.use(verifyFirebaseToken);
 
-// Get profile
+// Get profile (existing behavior)
 router.get("/", async (req, res) => {
   try {
     const uid = req.user.uid;
@@ -27,7 +30,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Update profile
+// Update profile (existing behavior)
 router.put("/", async (req, res) => {
   try {
     const uid = req.user.uid;
@@ -50,7 +53,7 @@ router.put("/", async (req, res) => {
   }
 });
 
-// ✅ GET avatar config
+// Avatar endpoints (existing behavior)
 router.get("/avatar", async (req, res) => {
   try {
     const user = await User.findById(req.user.uid);
@@ -60,7 +63,6 @@ router.get("/avatar", async (req, res) => {
   }
 });
 
-// ✅ PUT update avatar config
 router.put("/avatar", async (req, res) => {
   try {
     const { avatarConfig } = req.body;
@@ -77,5 +79,19 @@ router.put("/avatar", async (req, res) => {
     res.status(500).json({ error: "Failed to update avatar" });
   }
 });
+
+// -------------------------
+// New / missing endpoints
+// -------------------------
+
+// Liked items (populated by mongoose in controller)
+router.get("/friends", profileController.getLikedFriends);
+router.get("/roommates", profileController.getLikedRoommates);
+router.get("/accommodations", profileController.getLikedAccommodations);
+router.get("/restaurants", profileController.getLikedRestaurants);
+
+// Suggestions
+router.get("/friend-suggestions", profileController.getFriendSuggestions);
+router.get("/roommate-suggestions", profileController.getRoommateSuggestions);
 
 module.exports = router;

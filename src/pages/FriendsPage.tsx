@@ -1,3 +1,4 @@
+// FriendsPage.tsx
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ const FriendsPage = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(!isAuthenticated);
   const navigate = useNavigate();
 
-  // 🔹 Your mock users
+  // Mock users (kept locally)
   const mockFriends = [
     {
       _id: "mock-f1",
@@ -198,70 +199,140 @@ const FriendsPage = () => {
 
 
   const filterOptions = [
-    { id: "nationality", name: "Nationality", values: ["China", "Spain", "India", "Australia", "Egypt"] },
-    { id: "interest", name: "Interest", values: ["Photography", "Music", "Sports", "Travel", "Cooking", "Art"] },
-    { id: "language", name: "Language", values: ["English", "Mandarin", "Spanish", "Hindi", "Arabic", "French"] }
+    { id: "nationality", name: "Nationality", values: ["China","Spain","India","Australia","Egypt"] },
+    { id: "interest", name: "Interest", values: ["Photography","Music","Sports","Travel","Cooking","Art"] },
+    { id: "language", name: "Language", values: ["English","Mandarin","Spanish","Hindi","Arabic","French"] }
   ];
 
   const getProfileImage = (friend: any) => {
-    if (friend.gender === "male") return maleAvatar;
-    if (friend.gender === "female") return femaleAvatar;
+    if (!friend) return otherAvatar;
+    if ((friend.gender || "").toLowerCase() === "male") return maleAvatar;
+    if ((friend.gender || "").toLowerCase() === "female") return femaleAvatar;
     return otherAvatar;
   };
 
-  // 🔹 Filter out already liked friends
-  const getDiscoverFriends = (friends: any[]) =>
-    friends.filter(f => !likedFriends.find(l => l._id === f._id));
+  // helper: only show users not in likedFriends
+  const getDiscoverFriends = (friends: any[], liked = likedFriends) =>
+    friends.filter(f => !liked.some(l => String(l._id) === String(f._id)));
 
+  // fallback token getter: try firebase id token, otherwise localStorage 'immigrantConnect_token'
+  const getAuthToken = async () => {
+    try {
+      const user = getAuth().currentUser;
+      if (user) {
+        return await getIdToken(user, true);
+      }
+    } catch (err) {
+      console.warn("getIdToken failed:", err);
+    }
+    // fallback token (if you used earlier custom JWT)
+    return localStorage.getItem("immigrantConnect_token") || null;
+  };
+
+  // Safe fetch that handles non-json and non-ok responses
+  const fetchJsonSafe = async (url: string, opts: RequestInit = {}) => {
+    try {
+      const res = await fetch(url, opts);
+      const text = await res.text();
+      if (!res.ok) {
+        console.warn(`Non-OK response from ${url} status ${res.status}, body:`, text);
+        return null;
+      }
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        console.warn(`Non-JSON but OK response from ${url}:`, text);
+        return null;
+      }
+    } catch (err) {
+      console.error(`Fetch failed for ${url}:`, err);
+      return null;
+    }
+  };
+
+  // Load friends + liked from DB, merge with mocks, dedupe
   useEffect(() => {
     if (!isAuthenticated) {
+      // show mock users even when not logged-in
+      setAllFriends(mockFriends);
+      setFilteredFriends(getDiscoverFriends(mockFriends, []));
       setIsAuthModalOpen(true);
+      // load mock liked from localStorage if present
+      try {
+        const localLiked = JSON.parse(localStorage.getItem("likedFriends") || "[]");
+        setLikedFriends(Array.isArray(localLiked) ? localLiked : []);
+      } catch {
+        setLikedFriends([]);
+      }
       return;
     }
 
-    const fetchFriends = async () => {
+    const load = async () => {
       try {
-        const user = getAuth().currentUser;
-        const token = await getIdToken(user!, true);
+        const token = await getAuthToken();
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-        // ✅ get backend users
-        const res = await fetch(`${API_BASE}/profile/friend-suggestions`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const dbFriends = await res.json();
+        // Query both endpoints in parallel and be tolerant of failures
+        const [suggestionsRes, likedRes] = await Promise.all([
+          fetchJsonSafe(`${API_BASE}/profile/friend-suggestions`, { headers }),
+          fetchJsonSafe(`${API_BASE}/profile/friends`, { headers }),
+        ]);
 
-        // ✅ merge mocks + DB
-        const merged = [...mockFriends, ...(Array.isArray(dbFriends) ? dbFriends : [])];
-        // remove duplicates
-        const unique = merged.filter((f, i, arr) => arr.findIndex(x => x._id === f._id) === i);
+        const dbFriends = Array.isArray(suggestionsRes) ? suggestionsRes : [];
+        const dbLiked = Array.isArray(likedRes) ? likedRes : [];
+
+        // local mock liked (persisted)
+        let localLiked: any[] = [];
+        try {
+          localLiked = JSON.parse(localStorage.getItem("likedFriends") || "[]");
+          if (!Array.isArray(localLiked)) localLiked = [];
+        } catch {
+          localLiked = [];
+        }
+
+        // merge liked: server liked + persisted mock liked
+        const mergedLiked = [...dbLiked, ...localLiked.filter(m => String(m._id).startsWith("mock-"))];
+        setLikedFriends(mergedLiked);
+
+        // merge DB friends + mocks, dedupe by _id
+        const combined = [...mockFriends, ...dbFriends];
+        const unique: any[] = [];
+        const seen = new Set<string>();
+        for (const f of combined) {
+          if (!f || !f._id) continue;
+          const id = String(f._id);
+          if (seen.has(id)) continue;
+          seen.add(id);
+          unique.push(f);
+        }
 
         setAllFriends(unique);
-        setFilteredFriends(getDiscoverFriends(unique));
+        // filtered = unique minus liked
+        const discover = getDiscoverFriends(unique, mergedLiked);
+        setFilteredFriends(discover);
+        setCurrentIndex(0);
       } catch (err) {
-        console.error(err);
+        console.error("Failed loading friends:", err);
+        toast.error("Could not load friends. Check console for details.");
+        // fallback to mocks
         setAllFriends(mockFriends);
-        setFilteredFriends(getDiscoverFriends(mockFriends));
+        setFilteredFriends(getDiscoverFriends(mockFriends, []));
       }
     };
 
-    const fetchLiked = async () => {
-      try {
-        const user = getAuth().currentUser;
-        const token = await getIdToken(user!, true);
-
-        const res = await fetch(`${API_BASE}/profile/friends`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const liked = await res.json();
-        setLikedFriends(liked);
-      } catch (err) {
-        console.error("Failed to fetch liked friends", err);
-      }
-    };
-
-    fetchFriends();
-    fetchLiked();
+    load();
   }, [isAuthenticated]);
+
+  // persist liked mock items locally so they survive reload
+  useEffect(() => {
+    try {
+      // only persist mock-liked entries (those starting with mock-)
+      const mockOnly = likedFriends.filter(l => String(l._id).startsWith("mock-"));
+      localStorage.setItem("likedFriends", JSON.stringify(mockOnly));
+    } catch (err) {
+      console.error("Could not persist likedFriends:", err);
+    }
+  }, [likedFriends]);
 
   const handleFilterChange = (filterId: string, value: string) => {
     let filtered = allFriends;
@@ -273,64 +344,90 @@ const FriendsPage = () => {
         return true;
       });
     }
-    setFilteredFriends(getDiscoverFriends(filtered));
+    const discover = getDiscoverFriends(filtered);
+    setFilteredFriends(discover);
     setCurrentIndex(0);
   };
 
-  const handleLike = async (id: string) => {
-    const friend = allFriends.find(f => f._id === id);
-    if (!friend || likedFriends.find(f => f._id === id)) return;
-
-    const updatedLiked = [...likedFriends, friend];
-    setLikedFriends(updatedLiked);
-
-    try {
-      const user = getAuth().currentUser;
-      const token = await getIdToken(user!, true);
-
-      await fetch(`${API_BASE}/swipe/friend`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ friendId: id })
-      });
-
-      toast("Friend Liked!", { description: `You liked ${friend.name}` });
-    } catch (err) {
-      console.error(err);
-      toast.error("Could not like friend.");
-    }
-
-    setFilteredFriends(getDiscoverFriends(allFriends));
-    setCurrentIndex(prev => (prev + 1) % Math.max(1, getDiscoverFriends(allFriends).length));
+  const saveLikedToState = (list: any[]) => {
+    setLikedFriends(list);
+    // persisted via effect above
   };
 
-  const handleDislike = (id: string) => {
-    setCurrentIndex(prev => (prev + 1) % Math.max(1, filteredFriends.length));
+  const handleLike = async (id: string) => {
+    const friend = allFriends.find(f => String(f._id) === String(id));
+    if (!friend) return;
+
+    // Avoid duplicates
+    if (likedFriends.some(f => String(f._id) === String(id))) return;
+
+    // optimistic update
+    const updatedLiked = [...likedFriends, friend];
+    saveLikedToState(updatedLiked);
+
+    // call backend for real users
+    try {
+      if (!String(id).startsWith("mock-")) {
+        const user = getAuth().currentUser;
+        if (!user) throw new Error("No firebase user");
+        const token = await getIdToken(user, true);
+        await fetch(`${API_BASE}/swipe/friend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ friendId: id })
+        });
+      }
+      toast("Friend Liked!", { description: `You liked ${friend.name}` });
+    } catch (err) {
+      console.error("Failed to send like to backend:", err);
+      toast.error("Could not like friend (server error).");
+    }
+
+    // remove liked users from filteredFriends so they won't be reshown
+    const remaining = getDiscoverFriends(allFriends, updatedLiked);
+    setFilteredFriends(remaining);
+
+    // advance index safely within the new filtered list (infinite)
+    if (remaining.length === 0) {
+      setCurrentIndex(0);
+    } else {
+      // place pointer on next item
+      const newIndex = (currentIndex) % remaining.length;
+      setCurrentIndex((newIndex + 1) % remaining.length);
+    }
+  };
+
+  const handleDislike = (id?: string) => {
+    // just move to next unliked user (loop)
+    if (filteredFriends.length === 0) return;
+    setCurrentIndex(prev => (prev + 1) % filteredFriends.length);
   };
 
   const handleUnlike = async (id: string) => {
-    const updated = likedFriends.filter(f => f._id !== id);
-    setLikedFriends(updated);
+    const updated = likedFriends.filter(f => String(f._id) !== String(id));
+    saveLikedToState(updated);
 
     try {
-      const user = getAuth().currentUser;
-      const token = await getIdToken(user!, true);
-
-      await fetch(`${API_BASE}/swipe/unlike-friend`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ friendId: id })
-      });
-
+      if (!String(id).startsWith("mock-")) {
+        const user = getAuth().currentUser;
+        if (!user) throw new Error("No firebase user");
+        const token = await getIdToken(user, true);
+        await fetch(`${API_BASE}/swipe/unlike-friend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ friendId: id })
+        });
+      }
       toast("Removed from liked");
+      // ensure unliked user comes back into discover set
+      setFilteredFriends(getDiscoverFriends(allFriends, updated));
     } catch (err) {
-      console.error(err);
+      console.error("Failed unlike:", err);
+      toast.error("Failed to remove like (server error).");
     }
   };
 
-  const current = filteredFriends.length > 0
-    ? filteredFriends[currentIndex % filteredFriends.length]
-    : null;
+  const current = filteredFriends.length > 0 ? filteredFriends[currentIndex % filteredFriends.length] : null;
 
   return (
     <div className="min-h-screen bg-[#0a0f1a] py-8 text-white">
@@ -344,29 +441,32 @@ const FriendsPage = () => {
 
           <TabsContent value="discover">
             <FilterBar options={filterOptions} onFilterChange={handleFilterChange} />
-            {current && (
+            {current ? (
               <SwipeCard
                 id={current._id}
                 image={getProfileImage(current)}
                 title={current.name}
-                subtitle={`${current.age} • ${current.nationality}`}
+                subtitle={`${current.age ?? ""} ${current.nationality ? `• ${current.nationality}` : ""}`}
                 details={
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600">{current.university}</p>
-                    <p className="text-sm">{current.bio}</p>
+                    {current.university && <p className="text-sm text-gray-600">{current.university}</p>}
+                    {current.bio && <p className="text-sm">{current.bio}</p>}
                     <div className="flex gap-2 flex-wrap mt-2">
-                      {current.interest?.map((tag: string, i: number) => (
-                        <Badge key={i}>{tag}</Badge>
-                      ))}
+                      {(current.interest || []).map((tag: string, i: number) => <Badge key={i}>{tag}</Badge>)}
                     </div>
                     <div className="text-xs text-gray-500 mt-2">
-                      Languages: {current.language?.join(", ") || "N/A"}
+                      Languages: {(current.language || []).join(", ") || "N/A"}
                     </div>
                   </div>
                 }
                 onLike={() => handleLike(current._id)}
                 onDislike={() => handleDislike(current._id)}
               />
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <p>No new friends to show — you've liked all available profiles.</p>
+                <p className="text-xs mt-2 text-gray-500">If you expect DB users here, check DevTools/Network for the `/profile/*` responses.</p>
+              </div>
             )}
           </TabsContent>
 
@@ -374,33 +474,14 @@ const FriendsPage = () => {
             {likedFriends.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {likedFriends.map((f) => (
-                  <div
-                    key={f._id}
-                    className="flex items-start bg-[#1f2937] rounded-lg overflow-hidden shadow-md"
-                  >
-                    <img
-                      src={getProfileImage(f)}
-                      alt={f.name}
-                      className="w-28 h-28 object-cover rounded-l-lg"
-                    />
+                  <div key={f._id} className="flex items-start bg-[#1f2937] rounded-lg overflow-hidden shadow-md">
+                    <img src={getProfileImage(f)} alt={f.name} className="w-28 h-28 object-cover rounded-l-lg" />
                     <div className="flex-1 p-4">
                       <h3 className="text-lg font-semibold">{f.name}</h3>
                       <p className="text-sm text-gray-400 mb-1">{f.nationality}</p>
                       <div className="flex gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          onClick={() => navigate(`/chat?with=${f._id}`)}
-                        >
-                          Message
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-red-600 hover:bg-red-700 text-white"
-                          onClick={() => handleUnlike(f._id)}
-                        >
-                          Remove
-                        </Button>
+                        <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => navigate(`/chat?with=${f._id}`)}>Message</Button>
+                        <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white" onClick={() => handleUnlike(f._id)}>Remove</Button>
                       </div>
                     </div>
                   </div>
