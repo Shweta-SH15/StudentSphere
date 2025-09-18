@@ -1,9 +1,8 @@
-// authmiddleware.js
-// Use the admin instance exported by your initializer so it's always initialized.
-const admin = require('./middleware/firebaseAdmin'); // <<-- important: point to your initialized module
+// middleware/authMiddleware.js
+const admin = require('./firebaseAdmin'); // ✅ use initialized admin
 const User = require('../models/User');
 
-exports.protect = async (req, res, next) => {
+const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
   if (!authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Not authorized, no token" });
@@ -16,18 +15,24 @@ exports.protect = async (req, res, next) => {
     const decoded = await admin.auth().verifyIdToken(idToken);
     const uid = decoded.uid;
 
-    // Load user by Firebase UID (your User._id is the Firebase UID)
+    // Load user by Firebase UID
     const user = await User.findById(uid).select("-password");
     if (!user) {
       return res.status(401).json({ error: "Not authorized - user not found" });
     }
 
-    // Attach to req — controllers expect req.user.uid
-    req.user = { uid: user._id, ...user.toObject() };
+    // Attach clean user object
+    req.user = {
+      uid: user._id,
+      email: user.email,
+      name: user.name,
+    };
 
     next();
   } catch (err) {
-    console.error("Auth middleware error:", err);
+    console.error("Auth middleware error:", err.message);
     return res.status(401).json({ error: "Not authorized, token invalid" });
   }
 };
+
+module.exports = protect;

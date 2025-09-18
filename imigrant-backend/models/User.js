@@ -26,10 +26,13 @@ const UserSchema = new mongoose.Schema({
 
   avatarConfig: { type: String, default: "topType=ShortHairShortCurly&eyeType=Happy" },
 
+  // ✅ Correct: reference User by ID
   likedFriends: [{ type: String, ref: 'User' }],
   likedRoommates: [{ type: String, ref: 'User' }],
+
   likedAccommodations: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Accommodation' }],
   likedRestaurants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
+// models/User.js
