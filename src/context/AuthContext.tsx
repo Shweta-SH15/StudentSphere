@@ -29,6 +29,7 @@ interface AppUser {
   age?: number;
   lifestyle?: string[];
   interest?: string[];
+  firebaseUid?: string; // <-- added so components can access Firebase UID
 }
 
 interface AuthContextType {
@@ -61,24 +62,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Re-fetch profile whenever Firebase auth state changes
   useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth as FirebaseAuth, async (fbUser: FirebaseUser | null) => {
-  if (fbUser) {
-    try {
-      const token = await getIdToken(fbUser, true);
-      localStorage.setItem("immigrantConnect_token", token); // ✅ ADD THIS
-      const profile = await fetchProfile(token);
-      setUser(profile);
-    } catch (err: any) {
-      console.error("Error loading profile:", err);
-      toast.error(err.message || "Could not load your profile");
-      setUser(null);
-    }
-  } else {
-    localStorage.removeItem("immigrantConnect_token"); // ✅ REMOVE token on logout
-    setUser(null);
-  }
-  setLoading(false);
-});
+    const unsubscribe = onAuthStateChanged(auth as FirebaseAuth, async (fbUser: FirebaseUser | null) => {
+      if (fbUser) {
+        try {
+          const token = await getIdToken(fbUser, true);
+          localStorage.setItem("immigrantConnect_token", token);
+          const profile = await fetchProfile(token);
+          // Attach Firebase UID to the profile so UI components can use it
+          const enriched: AppUser = { ...profile, firebaseUid: fbUser.uid };
+          setUser(enriched);
+        } catch (err: any) {
+          console.error("Error loading profile:", err);
+          toast.error(err.message || "Could not load your profile");
+          setUser(null);
+        }
+      } else {
+        localStorage.removeItem("immigrantConnect_token");
+        setUser(null);
+      }
+      setLoading(false);
+    });
     return () => unsubscribe();
   }, []);
 
@@ -88,7 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = await getIdToken(cred.user, true);
     localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
-    setUser(profile);
+    setUser({ ...profile, firebaseUid: cred.user.uid });
     toast.success("Logged in successfully!");
   };
 
@@ -100,7 +103,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = await getIdToken(cred.user, true);
     localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
-    setUser(profile);
+    setUser({ ...profile, firebaseUid: cred.user.uid });
     toast.success("Account created successfully!");
   };
 
@@ -118,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = await getIdToken(result.user, true);
     localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
-    setUser(profile);
+    setUser({ ...profile, firebaseUid: result.user.uid });
     toast.success("Logged in with Google!");
   };
 
@@ -129,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const token = await getIdToken(result.user, true);
     localStorage.setItem("immigrantConnect_token", token);
     const profile = await fetchProfile(token);
-    setUser(profile);
+    setUser({ ...profile, firebaseUid: result.user.uid });
     toast.success("Logged in with Facebook!");
   };
 

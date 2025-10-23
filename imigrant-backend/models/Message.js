@@ -1,11 +1,11 @@
 // models/Message.js
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const ChatSchema = new mongoose.Schema({
-  sender: { type: String, ref: 'User' },   // Firebase UID is a String
-  receiver: { type: String, ref: 'User' },
-  message: String,
+const messageSchema = new mongoose.Schema({
+  sender: { type: String, required: true },
+  receiver: { type: String, required: true },
+  text: { type: String, required: true }, // ✅ consistent field
   timestamp: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Chat', ChatSchema);  // ✅ Still exporting as Chat
+module.exports = mongoose.model("Message", messageSchema);
